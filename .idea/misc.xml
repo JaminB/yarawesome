@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Black">
+    <option name="executionMode" value="BINARY" />
+    <option name="pathToExecutable" value="/usr/local/bin/black" />
+    <option name="sdkUUID" value="6f37726d-13d7-4103-a0fd-66f34da88c2f" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (yarawesome)" project-jdk-type="Python SDK" />
+  <component name="PyCharmProfessionalAdvertiser">
+    <option name="shown" value="true" />
+  </component>
+</project>

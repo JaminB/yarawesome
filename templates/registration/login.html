@@ -1,0 +1,17 @@
+{% extends 'core/base.html' %}
+{% block content %}
+  <div class="d-flex justify-content-center align-items-center min-vh-100">
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <b> {{ form.username.label_tag }} </b>
+            {{ form.username }}
+        </div>
+        <div class="mb-3">
+            <b>{{ form.password.label_tag }}</b>
+             &nbsp{{ form.password }}
+        </div>
+        <button type="submit" class="btn btn-primary float-end">Login</button>
+    </form>
+  </div>
+{% endblock %}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}My Site{% endblock %}</title>
+    <!-- Add your CSS links here -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'core/css/common/bootstrap5.min.css' %}">
+    {% block styles %}
+    {% endblock %}
+</head>
+<body>
+<header>
+</header>
+<div class="container-fluid d-flex flex-column">
+    <div class="row">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            {% if user.is_authenticated %}
+                <div class="container">
+                    <a class="navbar-brand" href="#">YARAwesome</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/editor">Editor</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Rules</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Deployments</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Settings</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/user/logout">Logout</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        </nav>
+    </div>
+    {% block content %}
+    {% endblock %}
+</div>
+<footer>
+</footer>
+<script src="{% static 'core/css/common/bootstrap5.min.css' %}"></script>
+<!-- Add your JavaScript scripts here -->
+{% block scripts %}
+{% endblock %}
+</body>
+</html>

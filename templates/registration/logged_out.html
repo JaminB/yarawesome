@@ -1,0 +1,14 @@
+{% extends 'core/base.html' %}
+{% block content %}
+  <div class="d-flex justify-content-center align-items-center min-vh-100">
+      <p class="lead">You have been successfully logged out.</p>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    setTimeout(function(){
+        window.location.href = "/";
+    }, 2000)
+</script>
+{% endblock %}

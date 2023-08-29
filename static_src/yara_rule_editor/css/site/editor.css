@@ -1,0 +1,17 @@
+.CodeMirror {
+  border: 1px solid #eee;
+  height: auto;
+}
+
+.cm-oblique-text {
+  font-style: oblique;
+}
+
+.cm-number-2 {
+  color: blue;
+}
+
+.cm-hex-2 {
+  font-family: monospace;
+  color: purple;
+}
