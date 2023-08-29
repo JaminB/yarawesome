@@ -29,6 +29,7 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
         insideStringsSection: false,
         insideConditionSection: false,
         variableAssignmentLine: false,
+        variables: [],
       };
     },
 
@@ -102,15 +103,24 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
         // Highlight our variables inside the strings section
         if (state.insideStringsSection){
             if (stream.match(variableRegex)){
+                var variableName = stream.string.trim().split("=")[0].trim();
+                state.variables.push(variableName);
                 state.variableAssignmentLine = true;
                 return "oblique-text variable-2"
             }
         }
         // Highlight our variables inside the condition section
         if (state.insideConditionSection){
+            state.variableAssignmentLine = false;
             if (stream.match(variableRegex)){
-                state.variableAssignmentLine = false;
-                return "oblique-text variable-2"
+                console.log(stream.string.slice(stream.start, stream.pos))
+                if (state.variables.indexOf(stream.string.slice(stream.start, stream.pos).trim()) != -1) {
+                    return "oblique-text variable-2"
+                }
+                else {
+                    return "string error"
+                }
+
             }
         }
         // Highlight our identifiers inside the meta section
@@ -132,8 +142,11 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
                 else if (assignedValue.slice(-1) == "}") {
                     return "oblique-text hex-2"
                 }
-                else {
+                else if (assignedValue.slice(-1) == '"'){
                     return "oblique-text string"
+                }
+                else {
+                    return "string"
                 }
             }
         }
