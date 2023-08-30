@@ -35,8 +35,10 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "rest_framework",
     "core",
-    "yara_rule_editor",
+    "rule_editor",
+    "rule_browser",
     "django.contrib.admin",
     "django.contrib.staticfiles",
 ]

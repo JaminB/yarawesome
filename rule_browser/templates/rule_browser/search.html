@@ -1,0 +1,65 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'rule_editor/css/common/codemirror.css' %}">
+<link rel="stylesheet" href="{% static 'rule_browser/css/site/editor.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-12">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Search..." aria-label="Search"
+                   aria-describedby="search-btn">
+            <button class="btn btn-outline-primary" type="button" id="search-btn">Search</button>
+        </div>
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <table class="table info-table w-100">
+                    <thead>
+                    <tr>
+                        <th class="col-md-2">Name</th>
+                        <th class="col-md-4">Description</th>
+                        <th class="col-md-6"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in search_results.results %}
+                            <tr>
+                                <td><h6>{{ result.name }}</h6></td>
+                                <td><b>{{ result.description }}</b></td>
+                                <td class="editor-container">
+                                    <button class="btn btn-sm btn-primary open-in-editor">Open in Editor</button>
+                                    <textarea disabled class="yara-rule form-control">{{ result.rule }}</textarea>
+
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <br>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'rule_editor/js/common/codemirror.js' %}"></script>
+<script src="{% static 'rule_editor/js/site/lexers/yara.js' %}"></script>
+<script>
+    $(".yara-rule").each(function(){
+        CodeMirror.fromTextArea(this, {
+          lineNumbers: true,
+          lineWrapping: true,
+          mode:  "yara",
+          gutter: true,
+        });
+    })
+</script>
+{% endblock %}

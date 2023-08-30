@@ -1,0 +1,60 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'rule_editor/css/common/codemirror.css' %}">
+<link rel="stylesheet" href="{% static 'rule_editor/css/site/editor.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10">
+        <textarea id="editor"></textarea>
+    </div>
+    <div class="col-md-2">
+        <div class="card">
+            <div class="card-body">
+                <table class="table info-table w-100">
+                    <tbody>
+                        <tr>
+                            <th>Variables</th>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <th>Errors</th>
+                            <td>0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <br>
+        <div class="card">
+            <div class="card-body">
+                <div class="btn-group-vertical w-100">
+                <button class="btn btn-sm btn-success">
+                    Save
+                </button>
+                <button class="btn btn-sm btn-primary">
+                    Test
+                </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'rule_editor/js/common/codemirror.js' %}"></script>
+<script src="{% static 'rule_editor/js/site/lexers/yara.js' %}"></script>
+<script>
+  var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+    lineNumbers: true,
+    mode:  "yara",
+    gutter: true
+  });
+  editor.setValue("\n".repeat(25));
+
+
+</script>
+{% endblock %}

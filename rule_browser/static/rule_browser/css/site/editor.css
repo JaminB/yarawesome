@@ -1,0 +1,34 @@
+.CodeMirror {
+  border: 1px solid #eee;
+  height: 100px;
+  overflow: auto;
+}
+
+.cm-oblique-text {
+  font-style: oblique;
+}
+
+.cm-number-2 {
+  color: blue;
+}
+
+.cm-hex-2 {
+  font-family: monospace;
+  color: purple;
+}
+
+.info-table {
+  font-size: 10px;
+}
+
+.editor-container {
+    position: relative;
+}
+
+.open-in-editor {
+  font-size: 10px;
+  position: absolute;
+  top: 65%;
+  left: 85%;
+  z-index: 1000;
+}

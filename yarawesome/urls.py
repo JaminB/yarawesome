@@ -17,11 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from core import views as core_views
-from yara_rule_editor import views as yara_rule_editor_views
+from rule_editor import views as yara_rule_editor_views
+from rule_browser import api as rule_browser_api
+from rule_browser import views as rule_browser_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/rules/search/", rule_browser_api.RuleSearchView.as_view(), name="rule-search"),
     path("user/", include("django.contrib.auth.urls")),
     path("editor/", yara_rule_editor_views.editor, name="editor"),
+    path("rules/search/", rule_browser_views.search, name="search"),
     path("", core_views.index, name="home")
 ]

@@ -9,6 +9,9 @@ readme = "README.md"
 python = "^3.10"
 django = "^4.2.4"
 watchdog = "^3.0.0"
+python-dotenv = "^1.0.0"
+plyara = "^2.1.1"
+django-rest-framework = "^0.1.0"
 
 
 [build-system]
