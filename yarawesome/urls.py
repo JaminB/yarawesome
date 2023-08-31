@@ -23,9 +23,13 @@ from rule_browser import views as rule_browser_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/rules/search/", rule_browser_api.RuleSearchView.as_view(), name="rule-search"),
     path("user/", include("django.contrib.auth.urls")),
+
+    path("api/rules/", rule_browser_api.RuleSearchResource.as_view(), name="rule-search"),
+    path("api/rules/<str:rule_id>", rule_browser_api.RuleOpenResource.as_view(), name="rule-open"),
+
     path("editor/", yara_rule_editor_views.editor, name="editor"),
+    path("editor/<str:rule_id>", yara_rule_editor_views.editor, name="editor-open"),
     path("rules/search/", rule_browser_views.search, name="search"),
     path("", core_views.index, name="home")
 ]

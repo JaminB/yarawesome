@@ -36,7 +36,7 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
     token: function(stream, state) {
       if (stream.sol()) {
         // Handle state changes at the start of a line if needed
-        console.log(state)
+        //console.log(state)
       }
       // Match single line comments
       if (stream.match(singleLineComment)) {

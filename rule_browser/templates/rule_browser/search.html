@@ -2,47 +2,66 @@
 {% load static %}
 {% block styles %}
 <link rel="stylesheet" href="{% static 'rule_editor/css/common/codemirror.css' %}">
-<link rel="stylesheet" href="{% static 'rule_browser/css/site/editor.css' %}">
+<link rel="stylesheet" href="{% static 'rule_editor/css/common/themes/base16-dark.css' %}">
+<link rel="stylesheet" href="{% static 'rule_browser/css/site/search.css' %}">
 
 {% endblock %}
 
 {% block content %}
+{% load mathfilters %}
 <div class="row justify-content-center">
     <div class="col-md-12">
-        <div class="input-group mb-3">
+        <form class="input-group mb-3" id="rule-search-form" action="/rules/search" method="GET">
             <input type="text" class="form-control" placeholder="Search..." aria-label="Search"
-                   aria-describedby="search-btn">
-            <button class="btn btn-outline-primary" type="button" id="search-btn">Search</button>
-        </div>
+                   aria-describedby="search-btn" name="term">
+            <input hidden type="text" class="form-control" name="start" value="0">
+            <input hidden type="text" class="form-control" name="max_results" value="25">
+            <button class="btn btn-primary" type="submit" id="search-btn">Search</button>
+        </form>
     </div>
 </div>
 <br>
 <div class="row">
-    <div class="col-md-12">
-        <div class="card">
+    <div class="col-md-12 vh-75">
+        <div class="card search-container">
             <div class="card-body">
                 <table class="table info-table w-100">
                     <thead>
                     <tr>
-                        <th class="col-md-2">Name</th>
-                        <th class="col-md-4">Description</th>
+                        <th class="col-md-2"></th>
+                        <th class="col-md-4"></th>
                         <th class="col-md-6"></th>
                     </tr>
                     </thead>
                     <tbody>
-                        {% for result in search_results.results %}
-                            <tr>
-                                <td><h6>{{ result.name }}</h6></td>
-                                <td><b>{{ result.description }}</b></td>
-                                <td class="editor-container">
-                                    <button class="btn btn-sm btn-primary open-in-editor">Open in Editor</button>
-                                    <textarea disabled class="yara-rule form-control">{{ result.rule }}</textarea>
-
-                                </td>
-                            </tr>
-                        {% endfor %}
+                    {% for result in search_results.results %}
+                    <tr>
+                        <td><h6>{{ result.name }}</h6></td>
+                        <td><b>{{ result.description }}</b></td>
+                        <td class="editor-container">
+                            <a class="btn btn-sm btn-secondary open-in-editor" href="/editor/{{result.id}}">Open in Editor</a>
+                            <textarea hidden disabled class="yara-rule form-control">{{ result.rule }}</textarea>
+                        </td>
+                    </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-center align-items-center">
+                    <div class="btn-group">
+                        {% if search_results.search_parameters.start != 0 %}
+                            <a class="btn btn-secondary btn-sm"
+                               href="?term={{search_results.search_parameters.term}}&start={{search_results.search_parameters.start|sub:search_results.search_parameters.max_results}}&max_results={{search_results.search_parameters.max_results}}">Previous</a>
+                        {% endif %}
+                        <button disabled class="btn btn-secondary btn-sm">{{search_results.search_parameters.start|add:search_results.displayed}} of {{search_results.available}}</button>
+                        {% if search_results.search_parameters.start|add:search_results.displayed !=  search_results.available %}
+                            <a class="btn btn-secondary btn-sm"
+                               href="?term={{search_results.search_parameters.term}}&start={{search_results.search_parameters.start|add:search_results.search_parameters.max_results}}&max_results={{search_results.search_parameters.max_results}}">Next</a>
+                        {% endif %}
+                    </div>
+                </div>
+
             </div>
         </div>
         <br>
@@ -52,6 +71,8 @@
 {% block scripts %}
 <script src="{% static 'rule_editor/js/common/codemirror.js' %}"></script>
 <script src="{% static 'rule_editor/js/site/lexers/yara.js' %}"></script>
+<script src="{% static 'rule_browser/js/site/search.js' %}"></script>
+
 <script>
     $(".yara-rule").each(function(){
         CodeMirror.fromTextArea(this, {
@@ -59,7 +80,10 @@
           lineWrapping: true,
           mode:  "yara",
           gutter: true,
+          readOnly: true,
+          theme: "base16-dark"
         });
-    })
+    });
+
 </script>
 {% endblock %}

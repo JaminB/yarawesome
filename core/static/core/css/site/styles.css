@@ -1,0 +1,12 @@
+.navbar-logo {
+    height: 75px;
+    width: auto;
+}
+
+.logo {
+    height: 50vh;
+    width: auto;
+}
+.logo-text {
+    font-family: system-ui;
+}
