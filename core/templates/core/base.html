@@ -15,7 +15,7 @@
 </header>
 <div class="container-fluid d-flex flex-column" data-bs-theme="dark">
     <div class="row">
-        <nav class="navbar navbar-expand-lg navbar-fixed-top">
+        <nav class="navbar navbar-expand-lg navbar-fixed-top bg-black">
             {% if user.is_authenticated %}
             <div class="container-fluid">
                 <a class="navbar-brand ms-auto text-danger fs-4 logo-text" href="/"><img src="{% static 'core/img/logo-small.png' %}" class="navbar-logo"/> YARAwesome</a>
@@ -56,7 +56,7 @@
 </footer>
 <script src="{% static 'core/js/common/bootstrap.min.js' %}"></script>
 <script src="{% static 'core/js/common/jquery.min3.7.1.js' %}"></script>
-
+<script src="{% static 'core/js/site/core.js' %}"></script>
 <!-- Add your JavaScript scripts here -->
 {% block scripts %}
 {% endblock %}

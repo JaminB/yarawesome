@@ -17,61 +17,71 @@
             <div class="card-body">
                 <table class="table info-table w-100">
                     <tbody>
-                        <tr>
-                            <th>Variables</th>
-                            <td>0</td>
-                        </tr>
-                        <tr>
-                            <th>Errors</th>
-                            <td>0</td>
-                        </tr>
+                    <tr>
+                        <th>Identifiers</th>
+                        <td class="text-success" id="identifier-count">0</td>
+                    </tr>
+                    <tr>
+                        <th>Variables</th>
+                        <td class="text-primary" id="variable-count">0</td>
+                    </tr>
+                    <tr>
+                        <th>Warnings</th>
+                        <td class="text-warning" id="warning-count">0</td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
         </div>
         <br>
         <div class="card">
+            <div class="card-header">
+                <h6 class="card-title">
+                    Rule Options
+                </h6>
+            </div>
             <div class="card-body">
                 <div class="btn-group-vertical w-100">
-                <button class="btn btn-sm btn-success">
-                    Save
-                </button>
-                <button class="btn btn-sm btn-primary">
-                    Test
-                </button>
+                    <button class="btn btn-sm btn-secondary">
+                        Test
+                    </button>
+                    <button id="debug-open-button" class="btn btn-sm btn-info" type="button" data-bs-toggle="offcanvas"
+                            data-bs-target="#side-panel-popout" aria-controls="offcanvasRight">
+                        Debug
+                    </button>
+                    <hr>
+                    <button class="btn btn-sm btn-success">
+                        Save
+                    </button>
+                    <button class="btn btn-sm btn-success">
+                        Save As
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
+</div>
+<div class="row">
+    <div class="offcanvas offcanvas-start vw-100" tabindex="-1" id="side-panel-popout" aria-labelledby="side-panel-popout-title">
+      <div class="offcanvas-header">
+        <h5 id="side-panel-popout-title"></h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body" id="side-panel-popout-body">
+        ...
+      </div>
     </div>
 </div>
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'rule_editor/js/common/codemirror.js' %}"></script>
 <script src="{% static 'rule_editor/js/site/lexers/yara.js' %}"></script>
+<script src="{% static 'rule_editor/js/site/editor.js' %}"></script>
+
+
 <script>
-  var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
-    lineNumbers: true,
-    mode:  "yara",
-    gutter: true,
-    theme: "base16-dark"
-  });
-  let matches = window.location.href.match(/\/editor\/([^\/]+)/);
-  if (matches && matches.length > 1) {
-    $.ajax({
-        url: `/api/rules/${matches[1]}`,
-        method: "GET",
-        success: function(response) {
-          editor.setValue(response["yara_rule"]["rule"])
-        },
-        error: function(xhr, status, error) {
-          editor.setValue("\n".repeat(25));
-          console.error("API error:", error);
-        }
-    });
-  }
-  else {
-    editor.setValue("\n".repeat(25));
-  }
+    setupEditor();
+    $("#debug-open-button").on("click", openDebugSidePanel);
 
 </script>
 {% endblock %}

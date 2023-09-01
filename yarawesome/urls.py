@@ -20,6 +20,7 @@ from core import views as core_views
 from rule_editor import views as yara_rule_editor_views
 from rule_browser import api as rule_browser_api
 from rule_browser import views as rule_browser_views
+from rule_editor import api as rule_editor_api
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -27,6 +28,7 @@ urlpatterns = [
 
     path("api/rules/", rule_browser_api.RuleSearchResource.as_view(), name="rule-search"),
     path("api/rules/<str:rule_id>", rule_browser_api.RuleOpenResource.as_view(), name="rule-open"),
+    path("api/rules/<str:rule_id>/debug", rule_editor_api.RuleDebugOpenResource.as_view(), name="rule-open-debug"),
 
     path("editor/", yara_rule_editor_views.editor, name="editor"),
     path("editor/<str:rule_id>", yara_rule_editor_views.editor, name="editor-open"),

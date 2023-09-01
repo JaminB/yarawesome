@@ -1,6 +1,15 @@
+.bg-black {
+    color: "#000000"
+}
+
 .navbar-logo {
-    height: 75px;
+    height: 100px;
     width: auto;
+}
+
+.loader {
+    height: 50px;
+    width: 50px;
 }
 
 .logo {
@@ -9,4 +18,8 @@
 }
 .logo-text {
     font-family: system-ui;
+}
+
+.offcanvas-large {
+    width: 100vw;
 }

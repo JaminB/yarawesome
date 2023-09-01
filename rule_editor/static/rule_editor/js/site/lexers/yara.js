@@ -1,3 +1,22 @@
+
+function updateIdentifierCount(identifierCount){
+    if(document.getElementById("identifier-count") !== null){
+        document.getElementById("identifier-count").innerText = identifierCount;
+    }
+}
+
+function updateVariableCount(variableCount){
+    if(document.getElementById("variable-count") !== null){
+        document.getElementById("variable-count").innerText = variableCount;
+    }
+}
+
+function updateWarningCount(errorCount){
+    if(document.getElementById("warning-count") !== null){
+        document.getElementById("warning-count").innerText = errorCount;
+    }
+}
+
 CodeMirror.defineMode("yara", function(config, parserConfig) {
   var keywords = [
     "all", "and", "any", "ascii", "at", "base64", "base64wide", "condition",
@@ -30,6 +49,8 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
         insideConditionSection: false,
         variableAssignmentLine: false,
         variables: [],
+        identifiers: [],
+        warnings: [],
       };
     },
 
@@ -37,6 +58,9 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
       if (stream.sol()) {
         // Handle state changes at the start of a line if needed
         //console.log(state)
+        updateIdentifierCount(state.identifiers.length);
+        updateVariableCount(state.variables.length);
+        updateWarningCount(state.warnings.length);
       }
       // Match single line comments
       if (stream.match(singleLineComment)) {
@@ -113,11 +137,11 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
         if (state.insideConditionSection){
             state.variableAssignmentLine = false;
             if (stream.match(variableRegex)){
-                console.log(stream.string.slice(stream.start, stream.pos))
                 if (state.variables.indexOf(stream.string.slice(stream.start, stream.pos).trim()) != -1) {
                     return "oblique-text variable-2"
                 }
                 else {
+                    state.warnings.push("Undeclared variable.")
                     return "string error"
                 }
 
@@ -126,6 +150,8 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
         // Highlight our identifiers inside the meta section
         if (state.insideMetaSection){
             if (stream.match(identifierRegex)){
+                var identifierName = stream.string.trim().split("=")[0].trim();
+                state.identifiers.push(identifierName);
                 state.variableAssignmentLine = true;
                 return "oblique-text variable-3"
             }
