@@ -1,5 +1,6 @@
 import os
 import time
+import typing
 import plyara
 import requests
 from datetime import datetime
@@ -8,18 +9,20 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 from yarawesome import config
-from yarawesome.daemons import Daemon
+from core.middleware import Daemon
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "yarawesome.settings")
 
 
-def parse_yara_rule(path_or_rule: str) -> dict:
+def parse_yara_rules(path_or_rule: str) -> typing.List[dict]:
     """
-        Parse a YARA rule from a file or a string and extract relevant information.
+        Parse YARA rules from a file or a string and extract relevant information.
 
         Args:
             path_or_rule (str): A file path or a YARA rule string.
 
         Returns:
-            dict: A dictionary containing parsed YARA rule information.
+            List[dict]: A list of dictionaries containing parsed YARA rule information.
     """
     flattened_rule = {}
     parser = plyara.Plyara()
@@ -29,21 +32,22 @@ def parse_yara_rule(path_or_rule: str) -> dict:
             yara_rule_content = yara_rule_in.read()
     else:
         yara_rule_content = path_or_rule
-
-    parsed_yara_rule = parser.parse_string(yara_rule_content)[-1]
-    for meta_item in parsed_yara_rule.get("metadata", []):
-        flattened_rule[f"{list(meta_item.keys())[0]}"] = list(meta_item.values())[0]
-    flattened_rule["rule_id"] = md5(parsed_yara_rule["rule_name"].encode("utf-8")).hexdigest()
-    flattened_rule["name"] = parsed_yara_rule["rule_name"]
-    flattened_rule["condition"] = " ".join(parsed_yara_rule.get("condition_terms", []))
-    flattened_rule["variables"] = " ".join(
-        [item["name"] for item in parsed_yara_rule.get("strings", [])]
-    )
-    flattened_rule["values"] = " ".join(
-        [item["value"] for item in parsed_yara_rule.get("strings", [])]
-    )
-
-    return flattened_rule
+    flattened_rules = []
+    parsed_yara_rules = parser.parse_string(yara_rule_content)
+    for parsed_yara_rule in parsed_yara_rules:
+        for meta_item in parsed_yara_rule.get("metadata", []):
+            flattened_rule[f"{list(meta_item.keys())[0]}"] = list(meta_item.values())[0]
+        flattened_rule["rule_id"] = md5(parsed_yara_rule["rule_name"].encode("utf-8")).hexdigest()
+        flattened_rule["name"] = parsed_yara_rule["rule_name"]
+        flattened_rule["condition"] = " ".join(parsed_yara_rule.get("condition_terms", []))
+        flattened_rule["variables"] = " ".join(
+            [item["name"] for item in parsed_yara_rule.get("strings", [])]
+        )
+        flattened_rule["values"] = " ".join(
+            [item["value"] for item in parsed_yara_rule.get("strings", [])]
+        )
+        flattened_rules.append(flattened_rule)
+    return flattened_rules
 
 
 def index_rule(parsed_rule: dict):
@@ -95,7 +99,7 @@ class RuleIndexer(Daemon):
     def run(self):
         event_handler = RuleIndexHandler()
         observer = Observer()
-        observer.schedule(event_handler, config.YARA_RULES_DIRECTORY, recursive=True)
+        observer.schedule(event_handler, config.YARA_RULES_UPLOAD_DIRECTORY, recursive=True)
         observer.start()
 
 

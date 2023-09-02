@@ -11,7 +11,7 @@ def search(request):
     if not term:
         term = "*"
     start = int(request.GET.get("start", 0))
-    max_results = int(request.GET.get("max_results", 25))
+    max_results = int(request.GET.get("max_results", 10))
     response = make_search_request(term, start, max_results)
     if response.status_code == 200:
         search_results = parse_search_response(response)

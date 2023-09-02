@@ -72,7 +72,11 @@ function openDebugSidePanel(){
                 </tbody>
             </table>`
 
-            let html = `<h6>Variables</h6>
+            let html = `
+            <h6>Condition</h6>
+            <code>${rule["condition_terms"].join(" ")}</code>
+            <br><br>
+            <h6>Variables</h6>
             <hr>
             ${variableTable}`
             $("#side-panel-popout-body").html(html);
