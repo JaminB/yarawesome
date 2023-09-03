@@ -1,14 +1,14 @@
 import json
 import requests
 import plyara
+from plyara.exceptions import ParseError
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+from core.management.commands import rule_indexer
 from rule_browser.serializers import RuleLookupSerializer
 from rule_browser.api import make_lookup_rule_request
-
-
-from yarawesome import config
 
 
 def parse_lookup_rule_response_verbose(response: requests.Response) -> dict:
@@ -24,9 +24,7 @@ def parse_lookup_rule_response_verbose(response: requests.Response) -> dict:
     try:
         hit = response.json().get("hits", {}).get("hits", [])[-1]
     except IndexError:
-        return {
-            "yara_rule": None
-        }
+        return {"yara_rule": None}
     try:
         with open(hit["_source"]["path_on_disk"], "r") as fin:
             hit["_source"].pop("path_on_disk")
@@ -37,19 +35,14 @@ def parse_lookup_rule_response_verbose(response: requests.Response) -> dict:
             yara_rule = {
                 **parsed_yara_rule,
                 "rule": raw_rule,
-
             }
 
-            return {
-                "yara_rule": yara_rule
-            }
+            return {"yara_rule": yara_rule}
     except FileNotFoundError:
-        return {
-            "yara_rule": None
-        }
+        return {"yara_rule": None}
 
 
-class RuleDebugOpenResource(APIView):
+class RuleEditorResource(APIView):
     def get(self, request, *args, **kwargs):
         serializer = RuleLookupSerializer(data=kwargs)
         serializer.is_valid(raise_exception=True)
@@ -76,3 +69,35 @@ class RuleDebugOpenResource(APIView):
                 {"error": "An internal error occurred"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    def put(self, request, *args, **kwargs):
+        serializer = RuleLookupSerializer(data=kwargs)
+        serializer.is_valid(raise_exception=True)
+        rule_id = serializer.validated_data["rule_id"]
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+        except json.JSONDecodeError:
+            return Response({"error": "Invalid JSON data"}, status=400)
+
+            # Check if 'yara_rule' is in the JSON data
+        if "yara_rule" not in data:
+            return Response(
+                {"error": 'Missing "yara_rule" key in JSON data'}, status=400
+            )
+
+            # Extract the 'yara_rule' value
+        yara_rule = data["yara_rule"]
+        try:
+            parsed_yara_rule = rule_indexer.parse_yara_rules_from_raw(yara_rule)[0]
+        except ParseError as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except IndexError:
+            return Response(
+                {"error": "No rule detected, perhaps missing closing bracket?"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        parsed_yara_rule["rule_id"] = rule_id
+        rule_indexer.index_yara_rule(parsed_yara_rule)
+
+        # Respond with a success message or appropriate response
+        return Response({"message": "YARA rule updated successfully"})

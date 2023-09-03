@@ -46,6 +46,7 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
         insideRuleDefinition: false,
         insideMetaSection: false,
         insideStringsSection: false,
+        insideStringsByteAssignment: false,
         insideConditionSection: false,
         variableAssignmentLine: false,
         variables: [],
@@ -100,6 +101,7 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
             stream.match("meta");
             state.insideMetaSection = true;
             state.insideStringsSection = false;
+            state.insideStringsByteAssignment = false;
             state.insideConditionSection = false;
             state.variableAssignmentLine = false;
             return "oblique-text keyword"
@@ -110,6 +112,7 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
             stream.match("strings");
             state.insideMetaSection = false;
             state.insideStringsSection = true;
+            state.insideStringsByteAssignment = false;
             state.insideConditionSection = false;
             state.variableAssignmentLine = false;
             return "oblique-text keyword"
@@ -120,6 +123,7 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
             stream.match("condition");
             state.insideMetaSection = false;
             state.insideStringsSection = false;
+            state.insideStringsByteAssignment = false;
             state.insideConditionSection = true;
             state.variableAssignmentLine = false;
             return "oblique-text keyword"
@@ -159,13 +163,13 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
         // Highlight the assigned values for either identifier or variable assignment lines
         if (state.variableAssignmentLine){
             var assignedValue = stream.string.trim().split("=")[1];
-            stream.match(assignedValue)
+            var wrapAroundValue = stream.string.trim();
             if (assignedValue){
                 assignedValue = assignedValue.trim();
                 if (isNumericRegex.test(assignedValue) || isBoolRegex.test(assignedValue)){
                     return "oblique-text number-2"
                 }
-                else if (assignedValue.slice(-1) == "}") {
+                else if (assignedValue.startsWith("{")) {
                     return "oblique-text hex-2"
                 }
                 else if (assignedValue.slice(-1) == '"'){
@@ -174,6 +178,10 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
                 else {
                     return "string"
                 }
+            }
+            // Probably wrapped around common in byte declarations (E.G {})
+            else if (wrapAroundValue) {
+                return "oblique-text hex-2"
             }
         }
         return "oblique-text"

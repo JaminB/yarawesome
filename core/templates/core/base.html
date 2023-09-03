@@ -5,8 +5,9 @@
     <!-- Add your CSS links here -->
     {% load static %}
     <link rel="stylesheet" href="{% static 'core/css/common/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'core/css/common/toastr.min.css' %}">
     <link rel="stylesheet" href="{% static 'core/css/site/styles.css' %}">
-
+    <script src="https://kit.fontawesome.com/cd7d6a3776.js" crossorigin="anonymous"></script>
     {% block styles %}
     {% endblock %}
 </head>
@@ -18,7 +19,8 @@
         <nav class="navbar navbar-expand-lg navbar-fixed-top bg-black">
             {% if user.is_authenticated %}
             <div class="container-fluid">
-                <a class="navbar-brand ms-auto text-danger fs-4 logo-text" href="/"><img src="{% static 'core/img/logo-small.png' %}" class="navbar-logo"/> <b>YARA</b>wesome</a>
+                <a class="navbar-brand ms-auto text-danger fs-4 logo-text" href="/"><img
+                        src="{% static 'core/img/logo-small.png' %}" class="navbar-logo"/> <b>YARA</b>wesome</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -26,22 +28,27 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="/editor">Editor</a>
+                            <a class="nav-link" href="/editor"><i class="fa-solid fa-pen"></i>&nbsp Editor</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/rules/search">Rules</a>
+                            <a class="nav-link" href="/rules/search"><i class="fa-solid fa-list"></i>&nbsp Rules</a>
+                        </li>
+                        <li class="nav-items">
+                            <a class="nav-link" href="#"><i class="fa-solid fa-box-open"></i>&nbsp Collections</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Deployments</a>
+                            <a class="nav-link" href="/api/rules"><i class="fa-solid fa-code"></i>&nbsp API</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/api/rules">API</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Settings</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/user/logout">Logout</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user"></i>&nbsp{{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-gear"></i>&nbsp Settings</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-server"></i>&nbsp Deployments</a></li>
+                                <li><a class="dropdown-item" href="/user/logout"><i class="fa-solid fa-right-from-bracket"></i>&nbsp Logout</a></li>
+                            </ul>
                         </li>
                     </ul>
                 </div>
@@ -56,6 +63,7 @@
 </footer>
 <script src="{% static 'core/js/common/bootstrap.min.js' %}"></script>
 <script src="{% static 'core/js/common/jquery.min3.7.1.js' %}"></script>
+<script src="{% static 'core/js/common/toastr.min.js' %}"></script>
 <script src="{% static 'core/js/site/core.js' %}"></script>
 <!-- Add your JavaScript scripts here -->
 {% block scripts %}

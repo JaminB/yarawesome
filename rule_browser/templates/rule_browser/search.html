@@ -13,12 +13,12 @@
 <div class="row justify-content-center">
     <div class="col-md-12">
         <br>
-        <form class="input-group mb-3" id="rule-search-form" action="/rules/search" method="GET">
+        <form class="input-group mb-3" id="rule-search-form" action="/rules/search/" method="GET">
             <input type="text" class="form-control" placeholder="Search..." aria-label="Search"
                    aria-describedby="search-btn" name="term">
             <input hidden type="text" class="form-control" name="start" value="0">
             <input hidden type="text" class="form-control" name="max_results" value="10">
-            <button class="btn btn-primary" type="submit" id="search-btn">Search</button>
+            <button class="btn btn-danger" type="submit" id="search-btn">Search</button>
         </form>
     </div>
 </div>
@@ -37,10 +37,10 @@
                     <tbody>
                     {% for result in search_results.results %}
                     <tr>
-                        <td><a href="#">{{ result.name }}</a></td>
+                        <td><a href="/rules/{{result.id}}">{{ result.name }}</a></td>
                         <td><p>{{ result.description }}</p></td>
                         <td class="editor-container">
-                            <a class="btn btn-sm btn-secondary open-in-editor" href="/editor/{{result.id}}">Open in Editor</a>
+                            <a class="btn btn-sm btn-secondary open-in-editor" href="/rules/{{result.id}}/editor">Open in Editor</a>
                             <div style="display: flex; justify-content: center; align-items: center;">
                                 <img src="{% static 'core/img/loader.svg' %}" class="loader"/>
                             </div>

@@ -27,11 +27,12 @@ urlpatterns = [
     path("user/", include("django.contrib.auth.urls")),
 
     path("api/rules/", rule_browser_api.RuleSearchResource.as_view(), name="rule-search"),
-    path("api/rules/<str:rule_id>", rule_browser_api.RuleOpenResource.as_view(), name="rule-open"),
-    path("api/rules/<str:rule_id>/debug", rule_editor_api.RuleDebugOpenResource.as_view(), name="rule-open-debug"),
+    path("api/rules/<str:rule_id>", rule_browser_api.RuleOpenResource.as_view(), name="rule-view"),
+    path("api/rules/<str:rule_id>/editor", rule_editor_api.RuleEditorResource.as_view(), name="rule-editor"),
 
     path("editor/", yara_rule_editor_views.editor, name="editor"),
-    path("editor/<str:rule_id>", yara_rule_editor_views.editor, name="editor-open"),
+    path("rules/<str:rule_id>/editor", yara_rule_editor_views.editor, name="editor-open"),
     path("rules/search/", rule_browser_views.search, name="search"),
+    path("rules/<str:rule_id>", rule_browser_views.rule, name="rule"),
     path("", core_views.index, name="home")
 ]

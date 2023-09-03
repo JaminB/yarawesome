@@ -1,7 +1,16 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
-from .api import make_search_request, parse_search_response
+from .api import make_search_request, parse_search_response, make_lookup_rule_request, parse_lookup_rule_response
+
+
+@login_required
+def rule(request, rule_id: str):
+    yara_rule = parse_lookup_rule_response(make_lookup_rule_request(rule_id))
+    context = {
+        "rule": yara_rule["yara_rule"]
+    }
+    return render(request, "rule_browser/rule.html", context=context)
 
 
 @login_required

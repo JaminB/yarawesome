@@ -10,9 +10,11 @@
 {% block content %}
 <div class="row">
     <div class="col-md-10">
+        <br>
         <textarea hidden disabled id="editor"></textarea>
     </div>
     <div class="col-md-2">
+        <br>
         <div class="card">
             <div class="card-body">
                 <table class="table info-table w-100">
@@ -42,19 +44,16 @@
             </div>
             <div class="card-body">
                 <div class="btn-group-vertical w-100">
-                    <button class="btn btn-sm btn-secondary">
-                        Test
+                    <button class="btn btn-sm btn-danger">
+                        <i class="fa-solid fa-vial-virus"></i>&nbsp Test
                     </button>
-                    <button id="debug-open-button" class="btn btn-sm btn-info" type="button" data-bs-toggle="offcanvas"
+                    <button id="debug-open-button" class="btn btn-sm btn-warning" type="button" data-bs-toggle="offcanvas"
                             data-bs-target="#side-panel-popout" aria-controls="offcanvasRight">
-                        Debug
+                        <i class="fa-solid fa-bug"></i>&nbsp Debug
                     </button>
                     <hr>
-                    <button class="btn btn-sm btn-success">
-                        Save
-                    </button>
-                    <button class="btn btn-sm btn-success">
-                        Save As
+                    <button id="save-button" class="btn btn-sm btn-success">
+                        <i class="fa-solid fa-floppy-disk"></i>&nbsp Save
                     </button>
                 </div>
             </div>
@@ -80,8 +79,6 @@
 
 
 <script>
-    setupEditor();
     $("#debug-open-button").on("click", openDebugSidePanel);
-
 </script>
 {% endblock %}

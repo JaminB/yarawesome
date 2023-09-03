@@ -1,0 +1,56 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'rule_editor/css/common/codemirror.css' %}">
+<link rel="stylesheet" href="{% static 'rule_editor/css/common/themes/base16-dark.css' %}">
+<link rel="stylesheet" href="{% static 'rule_browser/css/site/search.css' %}">
+<link rel="stylesheet" href="{% static 'rule_browser/css/site/rule.css' %}">
+{% endblock %}
+
+{% block content %}
+{% load mathfilters %}
+<div class="row">
+    <div class="col-md-12 vh-75">
+        <br>
+        <div class="card rule-container">
+            <div class="card-body">
+                <table class="table">
+                    <tbody>
+                    <tr>
+                        <th>Name</th>
+                        <td>{{rule.name}}</td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>{{rule.description}}</td>
+                    </tr>
+                    {% if rule.author %}
+                    <tr>
+                        <th>Author</th>
+                        <td>{{rule.author}}</td>
+                    </tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+                <br>
+                <hr>
+                <div class="editor-container">
+                    <textarea hidden disabled class="yara-rule form-control">{{ rule.rule }}</textarea>
+                    <a class="btn btn-sm btn-secondary open-in-editor" href="/rules/{{rule.rule_id}}/editor">Open in Editor</a>
+                </div>
+            </div>
+
+        </div>
+        <br>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'rule_editor/js/common/codemirror.js' %}"></script>
+<script src="{% static 'rule_editor/js/site/lexers/yara.js' %}"></script>
+<script src="{% static 'rule_browser/js/site/search.js' %}"></script>
+
+<script>
+    createSearchRuleViewers();
+</script>
+{% endblock %}

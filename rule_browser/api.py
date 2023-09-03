@@ -125,6 +125,7 @@ def parse_lookup_rule_response(response: requests.Response) -> dict:
                 "rule_id": hit["_source"].get("rule_id", ""),
                 "name": hit["_source"]["name"],
                 "description": hit["_source"].get("description", ""),
+                "author": hit["_source"].get("author", ""),
                 "rule": fin.read().strip(),
             }
             return {

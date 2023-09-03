@@ -14,7 +14,7 @@ from core.middleware import Daemon
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "yarawesome.settings")
 
 
-def parse_yara_rules(path_or_rule: str) -> typing.List[dict]:
+def parse_yara_rules_from_path(path_or_rule: str) -> typing.List[dict]:
     """
         Parse YARA rules from a file or a string and extract relevant information.
 
