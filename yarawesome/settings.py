@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "core",
     "rule_editor",
     "rule_browser",
+    "rule_import",
     "django.contrib.admin",
     "django.contrib.staticfiles",
 ]
@@ -59,7 +60,7 @@ ROOT_URLCONF = "yarawesome.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates" ],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -131,3 +132,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Authentication
 LOGIN_URL = 'user/login/'
 LOGIN_REDIRECT_URL = "/"
+
+
+#  Uploads
+MEDIA_ROOT = "/tmp/yarawesome/"

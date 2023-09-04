@@ -15,23 +15,27 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
+
 from core import views as core_views
-from rule_editor import views as yara_rule_editor_views
 from rule_browser import api as rule_browser_api
 from rule_browser import views as rule_browser_views
 from rule_editor import api as rule_editor_api
+from rule_editor import views as rule_editor_views
+from rule_import import api as rule_import_api
+from rule_import import views as rule_import_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("user/", include("django.contrib.auth.urls")),
-
+    path("api/import/", rule_import_api.UploadRulesResource.as_view(), name="rule-upload"),
     path("api/rules/", rule_browser_api.RuleSearchResource.as_view(), name="rule-search"),
     path("api/rules/<str:rule_id>", rule_browser_api.RuleOpenResource.as_view(), name="rule-view"),
     path("api/rules/<str:rule_id>/editor", rule_editor_api.RuleEditorResource.as_view(), name="rule-editor"),
 
-    path("editor/", yara_rule_editor_views.editor, name="editor"),
-    path("rules/<str:rule_id>/editor", yara_rule_editor_views.editor, name="editor-open"),
+    path("editor/", rule_editor_views.editor, name="editor"),
+    path("import/", rule_import_views.import_rule, name="import"),
+    path("rules/<str:rule_id>/editor", rule_editor_views.editor, name="editor-open"),
     path("rules/search/", rule_browser_views.search, name="search"),
     path("rules/<str:rule_id>", rule_browser_views.rule, name="rule"),
     path("", core_views.index, name="home")

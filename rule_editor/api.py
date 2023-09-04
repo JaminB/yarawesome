@@ -1,14 +1,15 @@
 import json
-import requests
+
 import plyara
+import requests
 from plyara.exceptions import ParseError
 from rest_framework import status
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from core.management.commands import rule_indexer
-from rule_browser.serializers import RuleLookupSerializer
 from rule_browser.api import make_lookup_rule_request
+from rule_browser.serializers import RuleLookupSerializer
 
 
 def parse_lookup_rule_response_verbose(response: requests.Response) -> dict:

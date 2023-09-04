@@ -1,15 +1,16 @@
 import os
 import time
 import typing
-import plyara
-import requests
 from datetime import datetime
 from hashlib import md5
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 
-from yarawesome import config
+import plyara
+import requests
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
+
 from core.middleware import Daemon
+from yarawesome import config
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "yarawesome.settings")
 

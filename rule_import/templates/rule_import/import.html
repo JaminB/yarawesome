@@ -1,0 +1,52 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block styles %}
+
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <br>
+            <form id="import-form">
+                <div class="input-group mb-3">
+                    <label for="import-input"></label>
+                    <input name="import_input" type="file" id="import-input" class="form-control" style="width:75%" placeholder="File Path">
+                     <label for="import-option-select"></label>
+                    <select name="import_option_select" id="import-option-select" class="form-select col-md-2">
+                        <option value="local">Local Disk</option>
+                        <option value="github">Github Repo</option>
+                        <option value="url">Archive URL</option>
+                    </select>
+                    <button type="submit" class="btn btn-danger">Import</button>
+                </div>
+            </form>
+            <div class="progress mt-3" style="display: none;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                     aria-valuenow="0"
+                     aria-valuemin="0" aria-valuemax="100" style="width: 0%;">0%
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="offcanvas offcanvas-start vw-100" tabindex="-1" id="side-panel-popout"
+         aria-labelledby="side-panel-popout-title">
+        <div class="offcanvas-header">
+            <h5 id="side-panel-popout-title"></h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" id="side-panel-popout-body">
+            ...
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'rule_import/js/site/import.js' %}"></script>
+
+<script>
+</script>
+{% endblock %}

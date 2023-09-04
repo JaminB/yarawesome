@@ -77,6 +77,17 @@ django = ">=3.0"
 pytz = "*"
 
 [[package]]
+name = "patool"
+version = "1.12"
+description = "portable archive file manager"
+optional = false
+python-versions = "*"
+files = [
+    {file = "patool-1.12-py2.py3-none-any.whl", hash = "sha256:3f642549c9a78f5b8bef1af92df385b521d360520d1f34e4dba3fd1dee2a21bc"},
+    {file = "patool-1.12.tar.gz", hash = "sha256:e3180cf8bfe13bedbcf6f5628452fca0c2c84a3b5ae8c2d3f55720ea04cb1097"},
+]
+
+[[package]]
 name = "ply"
 version = "3.11"
 description = "Python Lex & Yacc"
@@ -206,4 +217,4 @@ watchmedo = ["PyYAML (>=3.10)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "6c8ba6c75efdd297f5a9685eecfec424742f1a3cf2b71e609af2f309091e0c46"
+content-hash = "0e0b7e3ca6727efdef22f4e77f4530009bfc0072dac36be39cba888262c075ec"

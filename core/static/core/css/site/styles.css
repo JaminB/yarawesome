@@ -12,6 +12,11 @@
     width: 50px;
 }
 
+.bug {
+    height: 30vh;
+    width: auto;
+}
+
 .logo {
     height: 50vh;
     width: auto;

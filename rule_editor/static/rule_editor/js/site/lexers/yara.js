@@ -157,7 +157,7 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
                 var identifierName = stream.string.trim().split("=")[0].trim();
                 state.identifiers.push(identifierName);
                 state.variableAssignmentLine = true;
-                return "oblique-text variable-3"
+                return "oblique-text variable-3";
             }
         }
         // Highlight the assigned values for either identifier or variable assignment lines
@@ -167,16 +167,16 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
             if (assignedValue){
                 assignedValue = assignedValue.trim();
                 if (isNumericRegex.test(assignedValue) || isBoolRegex.test(assignedValue)){
-                    return "oblique-text number-2"
+                    return "oblique-text number-2";
                 }
                 else if (assignedValue.startsWith("{")) {
-                    return "oblique-text hex-2"
+                    return "oblique-text hex-2";
                 }
                 else if (assignedValue.slice(-1) == '"'){
-                    return "oblique-text string"
+                    return "oblique-text string";
                 }
                 else {
-                    return "string"
+                    return "string";
                 }
             }
             // Probably wrapped around common in byte declarations (E.G {})

@@ -1,18 +1,17 @@
-import os
-import time
 import json
+import os
 import typing
-import plyara
-import requests
-from datetime import datetime
 from hashlib import md5
 
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+import plyara
+import requests
+from yarawesome.settings import MEDIA_ROOT
 from django.core.management.base import BaseCommand
-
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 
 from yarawesome import config
+
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "yarawesome.settings")
 
@@ -24,9 +23,14 @@ def parse_yara_rules_from_raw(yara_rules_string: str) -> typing.List[dict]:
     for parsed_yara_rule in parsed_yara_rules:
         rule_start_line = parsed_yara_rule["start_line"]
         rule_end_line = parsed_yara_rule["stop_line"]
+        rule_content = "\n".join(yara_rules_string.split("\n")[rule_start_line:rule_end_line])
+        if not rule_content.strip().startswith("{"):
+            rule_content = "{\n" + rule_content
+        if not rule_content.strip().endswith("}"):
+            rule_content = rule_content + "\n}"
         flattened_rule = {
             "content": f"rule {parsed_yara_rule['rule_name']}\n"
-                       + "\n".join(yara_rules_string.split("\n")[rule_start_line:rule_end_line]),
+                       + rule_content,
             "rule_id": md5(
                 "".join(sorted(str(val) for val in parsed_yara_rule.values())).encode(
                     "utf-8"
@@ -114,16 +118,6 @@ class RuleIndexHandler(FileSystemEventHandler):
         except Exception as e:
             print(e)
 
-    def on_modified(self, event):
-        if event.is_directory:
-            return
-        print(f"Rule modified: {event.src_path}")
-        try:
-            for rule in parse_yara_rules_from_path(event.src_path):
-                index_yara_rule(rule)
-        except Exception as e:
-            print(e)
-
 
 class Command(BaseCommand):
     help = "Watch for newly added YARA rules and index them"
@@ -133,7 +127,7 @@ class Command(BaseCommand):
         rule_indexing_observer = Observer()
         rule_indexing_observer.schedule(
             rule_indexing_handler,
-            config.YARA_RULES_UPLOAD_DIRECTORY,
+            f"{MEDIA_ROOT}/rule-uploads/",
             recursive=True,
         )
         rule_indexing_observer.start()

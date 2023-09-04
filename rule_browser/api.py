@@ -1,12 +1,13 @@
 import json
+
 import requests
 from rest_framework import status
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import RuleLookupSerializer, RuleSearchSerializer
-
+from rest_framework.views import APIView
 
 from yarawesome import config
+
+from .serializers import RuleLookupSerializer, RuleSearchSerializer
 
 
 def make_search_request(

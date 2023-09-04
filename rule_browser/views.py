@@ -1,7 +1,8 @@
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
-from .api import make_search_request, parse_search_response, make_lookup_rule_request, parse_lookup_rule_response
+from .api import (make_lookup_rule_request, make_search_request,
+                  parse_lookup_rule_response, parse_search_response)
 
 
 @login_required
