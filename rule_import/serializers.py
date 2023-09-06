@@ -4,8 +4,12 @@ import patoolib
 from rest_framework import serializers
 from yarawesome.settings import MEDIA_ROOT
 
+from core.models import ImportYaraRuleJob
 
-def extract_specific_files(file_path, extract_dir=None, allowed_extensions=None):
+
+def extract_specific_files(
+    file_path, extract_dir=None, allowed_extensions=None, extracted_file_prefix=None
+):
     """
     Extracts specific files with allowed extensions from an archive file to a specified directory.
 
@@ -34,6 +38,10 @@ def extract_specific_files(file_path, extract_dir=None, allowed_extensions=None)
                     relative_path = os.path.relpath(source_path, temp_dir)
                     destination_path = os.path.join(extract_dir, relative_path)
                     os.makedirs(os.path.dirname(destination_path), exist_ok=True)
+                    if allowed_extensions and extracted_file_prefix:
+                        destination_path = destination_path.replace(
+                            file_name, f"{extracted_file_prefix}_{file_name}"
+                        )
                     shutil.copy2(source_path, destination_path)
 
         # Clean up the temporary directory
@@ -44,15 +52,15 @@ def extract_specific_files(file_path, extract_dir=None, allowed_extensions=None)
         return str(e)
 
 
-class SuricataRuleUploadSerializer(serializers.Serializer):
+class CreateImportJobSerializer(serializers.Serializer):
 
     file = serializers.FileField()
 
     def create(self, validated_data):
+        import_id = validated_data.pop("import_id")
         uploaded_file = validated_data["file"]
 
         file_path = f"{MEDIA_ROOT}/uploads/{uploaded_file.name}"
-
         with open(file_path, "wb") as destination_file:
             for chunk in uploaded_file.chunks():
                 destination_file.write(chunk)
@@ -60,6 +68,7 @@ class SuricataRuleUploadSerializer(serializers.Serializer):
             file_path,
             allowed_extensions=[".yara", ".yar"],
             extract_dir=f"{MEDIA_ROOT}/rule-uploads/",
+            extracted_file_prefix=import_id,
         )
         return validated_data
 
@@ -69,3 +78,9 @@ class SuricataRuleUploadSerializer(serializers.Serializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+
+
+class ImportJobSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImportYaraRuleJob
+        fields = "__all__"

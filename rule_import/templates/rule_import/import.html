@@ -12,8 +12,9 @@
             <form id="import-form">
                 <div class="input-group mb-3">
                     <label for="import-input"></label>
-                    <input name="import_input" type="file" id="import-input" class="form-control" style="width:75%" placeholder="File Path">
-                     <label for="import-option-select"></label>
+                    <input name="import_input" type="file" id="import-input" class="form-control" style="width:75%"
+                           placeholder="File Path">
+                    <label for="import-option-select"></label>
                     <select name="import_option_select" id="import-option-select" class="form-select col-md-2">
                         <option value="local">Local Disk</option>
                         <option value="github">Github Repo</option>
@@ -29,6 +30,15 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+<div class="row justify-content-center">
+    <div id="import-status-container" class="col-md-12 text-center" style="display:none">
+        <br>
+        <p class="lead">Imported <b id="rule-import-count"></b> YARA rules.</p>
+        <br>
+        <p class="lead">Created <b id="rule-collection-count">0</b> collection(s).</p>
+        <p>You can view these at anytime by navigating <a id="rule-import-search-link" href="/">here</a>.</p>
     </div>
 </div>
 <div class="row">

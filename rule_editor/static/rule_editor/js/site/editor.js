@@ -5,9 +5,12 @@ let editor;
 function initializeEditor() {
     editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
         lineNumbers: true,
+        lineWrapping: true,
         mode: "yara",
         gutter: true,
         theme: "base16-dark",
+        matchBrackets: true,
+        strict: true,
         extraKeys: {
             // Add a key binding for Ctrl+S (Cmd+S on Mac)
             "Ctrl-S": saveEditorContent

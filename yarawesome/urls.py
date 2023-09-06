@@ -28,7 +28,8 @@ from rule_import import views as rule_import_views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("user/", include("django.contrib.auth.urls")),
-    path("api/import/", rule_import_api.UploadRulesResource.as_view(), name="rule-upload"),
+    path("api/rules/import/", rule_import_api.CreateImportJobResource.as_view(), name="create-import-job"),
+    path("api/rules/import/<str:import_id>", rule_import_api.ImportJobResource.as_view(), name="view-import-job"),
     path("api/rules/", rule_browser_api.RuleSearchResource.as_view(), name="rule-search"),
     path("api/rules/<str:rule_id>", rule_browser_api.RuleOpenResource.as_view(), name="rule-view"),
     path("api/rules/<str:rule_id>/editor", rule_editor_api.RuleEditorResource.as_view(), name="rule-editor"),

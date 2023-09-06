@@ -6,8 +6,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from yarawesome import config
+from core.models import YaraRule
 
 from .serializers import RuleLookupSerializer, RuleSearchSerializer
+
+
+def get_rule_ids_in_import_job(import_id: int):
+    try:
+        rule_ids = YaraRule.objects.filter(import_job__id=import_id).values_list(
+            "yara_id", flat=True
+        )
+    except YaraRule.DoesNotExist:
+        return []
+    return rule_ids
 
 
 def make_search_request(
@@ -26,12 +37,29 @@ def make_search_request(
     """
     headers = {"Content-Type": "application/json"}
     search_url = f"{config.SEARCH_DB_URI}/es/_search"
-    search_payload = {
-        "query": {"bool": {"must": [{"query_string": {"query": term}}]}},
-        "sort": ["-@timestamp"],
-        "from": start,
-        "size": max_results,
-    }
+    if term.strip().startswith("import_id:"):
+        import_id = int(term.strip().split(":")[1])
+        query_strings = [
+            {"query_string": {"query": rule_id}}
+            for rule_id in get_rule_ids_in_import_job(import_id)
+        ]
+        print(start, start + max_results, query_strings[start : start + max_results])
+        query = {"bool": {"should": query_strings[start : start + max_results]}}
+        search_payload = {
+            "query": query,
+            "sort": ["-@timestamp"],
+            "from": 0,
+            "size": max_results,
+        }
+    else:
+        query = {"bool": {"must": [{"query_string": {"query": term}}]}}
+        search_payload = {
+            "query": query,
+            "sort": ["-@timestamp"],
+            "from": start,
+            "size": max_results,
+        }
+
     with requests.post(
         url=search_url,
         json=search_payload,
@@ -54,7 +82,7 @@ def make_lookup_rule_request(rule_id: str) -> requests.Response:
     headers = {"Content-Type": "application/json"}
     search_url = f"{config.SEARCH_DB_URI}/es/_search"
     search_payload = {
-        "query": {"bool": {"must": [{"query_string": {"query": f'_id: {rule_id}'}}]}},
+        "query": {"bool": {"must": [{"query_string": {"query": f"_id: {rule_id}"}}]}},
         "sort": ["-@timestamp"],
         "from": 0,
         "size": 1,
@@ -68,12 +96,15 @@ def make_lookup_rule_request(rule_id: str) -> requests.Response:
         return response
 
 
-def parse_search_response(response: requests.Response) -> dict:
+def parse_search_response(
+    response: requests.Response, term: str, start: int, max_results: int
+) -> dict:
     """
     Parse the response from a search request.
 
     Args:
         response (requests.Response): The API response.
+        term (str): The search term.
 
     Returns:
         dict: Parsed search results.
@@ -91,14 +122,19 @@ def parse_search_response(response: requests.Response) -> dict:
                     "rule": fin.read().strip(),
                 }
             )
+    if term.strip().startswith("import_id:"):
+        import_id = int(term.strip().split(":")[1])
+        available = YaraRule.objects.filter(import_job__id=import_id).count()
+    else:
+        available = response.json().get("hits", {}).get("total", {}).get("value", 0)
     return {
         "search_parameters": {
-            "term": original_query["query"]["bool"]["must"][0]["query_string"]["query"],
-            "start": original_query["from"],
-            "max_results": original_query["size"],
+            "term": term,
+            "start": start,
+            "max_results": max_results,
         },
         "search_time": response.json().get("hits", {}).get("took", 0),
-        "available": response.json().get("hits", {}).get("total", {}).get("value", 0),
+        "available": available,
         "displayed": len(results),
         "results": results,
     }
@@ -117,9 +153,7 @@ def parse_lookup_rule_response(response: requests.Response) -> dict:
     try:
         hit = response.json().get("hits", {}).get("hits", [])[-1]
     except IndexError:
-        return {
-            "yara_rule": None
-        }
+        return {"yara_rule": None}
     try:
         with open(hit["_source"]["path_on_disk"], "r") as fin:
             yara_rule = {
@@ -129,13 +163,9 @@ def parse_lookup_rule_response(response: requests.Response) -> dict:
                 "author": hit["_source"].get("author", ""),
                 "rule": fin.read().strip(),
             }
-            return {
-                "yara_rule": yara_rule
-            }
+            return {"yara_rule": yara_rule}
     except FileNotFoundError:
-        return {
-            "yara_rule": None
-        }
+        return {"yara_rule": None}
 
 
 class RuleSearchResource(APIView):
@@ -147,7 +177,10 @@ class RuleSearchResource(APIView):
         max_results = serializer.validated_data["max_results"]
         response = make_search_request(term, start, max_results)
         if response.status_code == 200:
-            return Response(parse_search_response(response), status=status.HTTP_200_OK)
+            return Response(
+                parse_search_response(response, term, start, max_results),
+                status=status.HTTP_200_OK,
+            )
 
         elif response.status_code == 401:
             return Response(
