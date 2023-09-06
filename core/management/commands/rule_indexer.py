@@ -2,6 +2,8 @@ import re
 import json
 import time
 from django.db import connections
+from django.db.utils import IntegrityError
+
 import os
 import typing
 from hashlib import md5
@@ -100,23 +102,6 @@ def parse_yara_rules_from_path(yara_rule_path: str) -> typing.List[dict]:
     import_job_cache = {}
     for flattened_rule in flattened_rules:
         flattened_rule["path_on_disk"] = yara_rule_path
-        import_id = int(os.path.basename(flattened_rule["path_on_disk"]).split("_")[0])
-        if import_id in import_job_cache:
-            import_job = import_job_cache[import_id]
-        else:
-            try:
-                import_job_cache[import_id] = ImportYaraRuleJob.objects.get(
-                    id=import_id
-                )
-                import_job = import_job_cache[import_id]
-            except ImportYaraRuleJob.DoesNotExist:
-                continue
-        YaraRule(
-            yara_id=flattened_rule["rule_id"],
-            user=import_job.user,
-            import_job=import_job,
-        ).save()
-
     return flattened_rules
 
 
@@ -159,8 +144,10 @@ def index_yara_rule(parsed_rule: dict):
 
 
 class RuleIndexHandler(FileSystemEventHandler):
-    def on_created(self, event):
+    def on_modified(self, event):
         if event.is_directory:
+            return
+        if not event.src_path.endswith(".yara") and not event.src_path.endswith(".yar"):
             return
         import_job_id = int(os.path.basename(event.src_path).split("_")[0])
         collection_name = os.path.dirname(event.src_path).split("/")[-1]
@@ -181,9 +168,13 @@ class RuleIndexHandler(FileSystemEventHandler):
                 f"Creating new collection {yara_rule_collection.name} ({yara_rule_collection.id})"
             )
         else:
-            yara_rule_collection = YaraRuleCollection.objects.filter(
-                import_job=import_job_id, name=collection_name
-            ).first()
+            yara_rule_collection = (
+                YaraRuleCollection.objects.filter(
+                    import_job__id=import_job_id, name=collection_name
+                )
+                .all()
+                .latest("id")
+            )
 
         for rule in parse_yara_rules_from_path(event.src_path):
             index_yara_rule(rule)
@@ -195,9 +186,8 @@ class RuleIndexHandler(FileSystemEventHandler):
                     collection=yara_rule_collection,
                 ).save()
             except ValueError:
-                print(
-                    f"Skipping {rule['rule_id']} as collection record wasn't properly written."
-                )
+                continue
+            except IntegrityError:
                 continue
 
 

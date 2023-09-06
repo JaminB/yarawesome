@@ -17,7 +17,7 @@ class ImportYaraRuleJob(models.Model):
 
 class YaraRuleCollection(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=32)
+    name = models.CharField(max_length=64)
     description = models.CharField(max_length=32)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     import_job = models.ForeignKey(ImportYaraRuleJob, on_delete=models.CASCADE)
@@ -38,6 +38,9 @@ class YaraRule(models.Model):
     collection = models.ForeignKey(
         YaraRuleCollection, on_delete=models.CASCADE, null=True
     )
+
+    class Meta:
+        unique_together = ("yara_id", "import_job")
 
     def __str__(self):
         return self.id

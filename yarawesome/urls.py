@@ -28,16 +28,34 @@ from rule_import import views as rule_import_views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("user/", include("django.contrib.auth.urls")),
-    path("api/rules/import/", rule_import_api.CreateImportJobResource.as_view(), name="create-import-job"),
-    path("api/rules/import/<str:import_id>", rule_import_api.ImportJobResource.as_view(), name="view-import-job"),
-    path("api/rules/", rule_browser_api.RuleSearchResource.as_view(), name="rule-search"),
-    path("api/rules/<str:rule_id>", rule_browser_api.RuleOpenResource.as_view(), name="rule-view"),
-    path("api/rules/<str:rule_id>/editor", rule_editor_api.RuleEditorResource.as_view(), name="rule-editor"),
-
+    path(
+        "api/rules/import/",
+        rule_import_api.CreateImportJobResource.as_view(),
+        name="create-import-job",
+    ),
+    path(
+        "api/rules/import/<str:import_id>",
+        rule_import_api.ImportJobResource.as_view(),
+        name="view-import-job",
+    ),
+    path(
+        "api/rules/", rule_browser_api.RuleSearchResource.as_view(), name="rule-search"
+    ),
+    path(
+        "api/rules/<str:rule_id>",
+        rule_browser_api.RuleOpenResource.as_view(),
+        name="rule-view",
+    ),
+    path(
+        "api/rules/<str:rule_id>/editor",
+        rule_editor_api.RuleEditorResource.as_view(),
+        name="rule-editor",
+    ),
     path("editor/", rule_editor_views.editor, name="editor"),
     path("import/", rule_import_views.import_rule, name="import"),
     path("rules/<str:rule_id>/editor", rule_editor_views.editor, name="editor-open"),
     path("rules/search/", rule_browser_views.search, name="search"),
     path("rules/<str:rule_id>", rule_browser_views.rule, name="rule"),
-    path("", core_views.index, name="home")
+    path("my_imports/", rule_import_views.my_imports, name="my-imports"),
+    path("", core_views.index, name="home"),
 ]
