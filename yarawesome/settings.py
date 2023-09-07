@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-amnk9blb!)8a0u6ikvqve=srrzzb@nlr%=l3w8rq8yp-fb$n*%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["172.16.50.128"]
 
 
 # Application definition
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "core",
     "rule_editor",
     "rule_browser",
+    "rule_collections",
     "rule_import",
     "django.contrib.admin",
     "django.contrib.staticfiles",
@@ -130,7 +131,7 @@ STATIC_ROOT = BASE_DIR / "static_src"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Authentication
-LOGIN_URL = 'user/login/'
+LOGIN_URL = "user/login/"
 LOGIN_REDIRECT_URL = "/"
 
 

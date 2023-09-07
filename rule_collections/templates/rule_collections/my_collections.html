@@ -3,7 +3,7 @@
 {% block styles %}
 <link rel="stylesheet" href="{% static 'rule_editor/css/common/codemirror.css' %}">
 <link rel="stylesheet" href="{% static 'rule_editor/css/common/themes/base16-dark.css' %}">
-<link rel="stylesheet" href="{% static 'rule_browser/css/site/rule.css' %}">
+<link rel="stylesheet" href="{% static 'rule_collections/css/site/styles.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -11,32 +11,35 @@
 <div class="row">
     <div class="col-md-12 vh-75">
         <br>
-        <div class="card rule-container">
+        <div class="card rule-collections-container">
             <div class="card-body">
                 <table class="table">
-                    <tbody>
+                    <thead>
                     <tr>
+                        <th></th>
+                        <th></th>
+                        <th>Created</th>
                         <th>Name</th>
-                        <td>{{rule.name}}</td>
-                    </tr>
-                    <tr>
                         <th>Description</th>
-                        <td>{{rule.description}}</td>
+                        <th>Rule Count</th>
                     </tr>
-                    {% if rule.author %}
+                    </thead>
+                    <tbody>
+                    {% for collection in collections %}
                     <tr>
-                        <th>Author</th>
-                        <td>{{rule.author}}</td>
+                        <td><a class="btn btn-sm btn-dark" href="/my_collections/{{collection.id}}/"><i
+                                class="fa-solid fa-pen"></i></a></td>
+                        <td><img class="collection-icon" src="/static/core/img/icons/collections/{{collection.icon}}.png"></td>
+                        <td>{{collection.created_time}}</td>
+                        <td>{{collection.name}}</td>
+                        <td>{{collection.description}}</td>
+                        <td>{{collection.get_rule_count}}</td>
                     </tr>
-                    {% endif %}
+                    {% endfor %}
                     </tbody>
                 </table>
                 <br>
                 <hr>
-                <div class="editor-container">
-                    <textarea hidden disabled class="yara-rule form-control">{{ rule.rule }}</textarea>
-                    <a class="btn btn-sm btn-dark open-in-editor" href="/rules/{{rule.rule_id}}/editor"><i class="fa-solid fa-pen"></i></a>
-                </div>
             </div>
 
         </div>

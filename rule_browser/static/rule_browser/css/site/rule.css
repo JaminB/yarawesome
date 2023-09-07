@@ -5,9 +5,11 @@
 }
 
 .open-in-editor {
-  font-size: 12px;
-  position: absolute;
-  top: 85%;
-  left: 90%;
+  font-size: 15px;
+  position: relative;
+  border-color: red;
+  bottom: 280px;
+  left: 95%;
+  margin-right: 100px;
   z-index: 1000;
 }

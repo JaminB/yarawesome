@@ -11,6 +11,7 @@ from watchdog.observers import Observer
 class StaticChangeHandler(FileSystemEventHandler):
     def on_modified(self, event):
         for app_config in apps.get_app_configs():
+            print(app_config)
             if event.src_path.startswith(app_config.path + "/static"):
                 print("Static files modified. Running collectstatic...")
                 call_command("collectstatic", interactive=False)

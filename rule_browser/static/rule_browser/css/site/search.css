@@ -27,9 +27,10 @@
 
 .open-in-editor {
   font-size: 10px;
-  position: absolute;
-  top: 65%;
-  left: 85%;
+  position: relative;
+  top: 35px;
+  left: 92%;
+  border-color: red;
   z-index: 1000;
 }
 

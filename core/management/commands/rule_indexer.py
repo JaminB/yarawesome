@@ -1,30 +1,43 @@
-import re
-import json
-import time
-from django.db import connections
-from django.db.utils import IntegrityError
-
 import os
 import typing
 from hashlib import md5
 
 import plyara
 import requests
-from yarawesome.settings import MEDIA_ROOT
 from django.core.management.base import BaseCommand
+from django.db.utils import IntegrityError
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
-
-from yarawesome import config
+from django.contrib.auth.models import User
 from core.models import ImportYaraRuleJob, YaraRule, YaraRuleCollection
-
+from yarawesome import config
+from yarawesome.settings import MEDIA_ROOT
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "yarawesome.settings")
 
 
+def get_icon_id_from_string(string: str):
+    """
+    Get an icon ID from a string.
+
+    Args:
+        string: The string to get an icon ID from.
+
+    Returns: An icon ID.
+
+    """
+    return int(md5(string.encode("utf-8")).hexdigest()[:8], 16) % 20
+
+
 def parse_yara_rule_from_index(yara_rules_index_path: str) -> typing.List[dict]:
-    attempts = 0
-    wait_interval_seconds = 1
+    """
+    Parse YARA rules from a YARA rule index file and extract relevant information.
+    Args:
+        yara_rules_index_path: A file path containing one or more YARA rules
+
+    Returns: A list of dictionaries containing parsed YARA rule information.
+
+    """
     import_id = int(os.path.basename(yara_rules_index_path).split("_")[0])
     yara_rules_index_root = os.path.dirname(os.path.abspath(yara_rules_index_path))
     collection_rules = []
@@ -48,6 +61,14 @@ def parse_yara_rule_from_index(yara_rules_index_path: str) -> typing.List[dict]:
 
 
 def parse_yara_rules_from_raw(yara_rules_string: str) -> typing.List[dict]:
+    """
+    Parse YARA rules from a string and extract relevant information.
+    Args:
+        yara_rules_string: A string containing one or more YARA rules
+
+    Returns: A list of dictionaries containing parsed YARA rule information.
+
+    """
     parser = plyara.Plyara()
     flattened_rules = []
     parsed_yara_rules = parser.parse_string(yara_rules_string)
@@ -99,58 +120,23 @@ def parse_yara_rules_from_path(yara_rule_path: str) -> typing.List[dict]:
         return []
 
     flattened_rules = parse_yara_rules_from_raw(yara_rule_content)
-    import_job_cache = {}
     for flattened_rule in flattened_rules:
         flattened_rule["path_on_disk"] = yara_rule_path
     return flattened_rules
 
 
-def index_yara_rule(parsed_rule: dict):
+def index_yara_rule_in_db(parsed_rule: dict, user: typing.Optional[User] = None):
     """
-    Index a parsed YARA rule into the search database.
-
+    Index a parsed YARA rule into the database. If the rule already exists, do nothing.
     Args:
-        parsed_rule (dict): A dictionary containing parsed YARA rule information.
+        parsed_rule: A dictionary containing parsed YARA rule information.
 
-    Returns:
-        requests.Response: The response from the indexing request.
+    Returns: A YaraRule instance.
+
     """
-    if not os.path.exists(config.YARA_RULES_COLLECTIONS_DIRECTORY):
-        os.mkdir(config.YARA_RULES_COLLECTIONS_DIRECTORY)
-    path_on_disk = (
-        f"{config.YARA_RULES_COLLECTIONS_DIRECTORY}/{parsed_rule['rule_id']}.yara"
-    )
-    with open(path_on_disk, "w") as yara_sig_out:
-        if parsed_rule.get("imports", []):
-            _import_str = ""
-            for _import in parsed_rule.get("imports", []):
-                if f"{_import}." in parsed_rule["content"]:
-                    _import_str += f'import "{_import}"\n'
-            parsed_rule["content"] = _import_str + "\n" + parsed_rule["content"]
-        yara_sig_out.write(parsed_rule["content"].strip())
-    headers = {"Content-Type": "application/json"}
-    create_document_with_id_url = (
-        f"{config.SEARCH_DB_URI}/api/yara-rules/_doc/{parsed_rule['rule_id']}"
-    )
-    parsed_rule["path_on_disk"] = path_on_disk
-    parsed_rule.pop("content")
-    with requests.put(
-        url=create_document_with_id_url,
-        json=parsed_rule,
-        headers=headers,
-        auth=(config.SEARCH_DB_USER, config.SEARCH_DB_PASSWORD),
-    ) as response:
-        return response
-
-
-class RuleIndexHandler(FileSystemEventHandler):
-    def on_modified(self, event):
-        if event.is_directory:
-            return
-        if not event.src_path.endswith(".yara") and not event.src_path.endswith(".yar"):
-            return
-        import_job_id = int(os.path.basename(event.src_path).split("_")[0])
-        collection_name = os.path.dirname(event.src_path).split("/")[-1]
+    if parsed_rule.get("path_on_disk"):
+        import_job_id = int(os.path.basename(parsed_rule["path_on_disk"]).split("_")[0])
+        collection_name = os.path.dirname(parsed_rule["path_on_disk"]).split("/")[-1]
         import_job = ImportYaraRuleJob.objects.get(id=import_job_id)
 
         yara_rule_collection = YaraRuleCollection()
@@ -163,6 +149,7 @@ class RuleIndexHandler(FileSystemEventHandler):
         ).exists():
             yara_rule_collection.user = import_job.user
             yara_rule_collection.import_job = import_job
+            yara_rule_collection.icon = get_icon_id_from_string(collection_name)
             yara_rule_collection.save()
             print(
                 f"Creating new collection {yara_rule_collection.name} ({yara_rule_collection.id})"
@@ -175,20 +162,85 @@ class RuleIndexHandler(FileSystemEventHandler):
                 .all()
                 .latest("id")
             )
+        yara_rule = YaraRule(
+            rule_id=parsed_rule["rule_id"],
+            content=parsed_rule["content"],
+            user=import_job.user,
+            import_job=import_job,
+            collection=yara_rule_collection,
+        )
+        yara_rule.save()
+        return yara_rule
+    else:
+        yara_rule = YaraRule.objects.filter(
+            rule_id=parsed_rule["rule_id"], user=user
+        ).first()
+        if yara_rule:
+            yara_rule.content = parsed_rule["content"]
+            yara_rule.save()
+        return yara_rule
 
+
+def index_yara_rule(parsed_rule: dict, user: typing.Optional[User] = None):
+    """
+    Index a parsed YARA rule into the search database.
+
+    Args:
+        user: The user making the search request.
+        parsed_rule (dict): A dictionary containing parsed YARA rule information.
+
+    Returns:
+        requests.Response: The response from the indexing request.
+    """
+    if not os.path.exists(config.YARA_RULES_COLLECTIONS_DIRECTORY):
+        os.mkdir(config.YARA_RULES_COLLECTIONS_DIRECTORY)
+    if parsed_rule.get("imports", []):
+        _import_str = ""
+        for _import in parsed_rule.get("imports", []):
+            if f"{_import}." in parsed_rule["content"]:
+                _import_str += f'import "{_import}"\n'
+        parsed_rule["content"] = _import_str + "\n" + parsed_rule["content"]
+    headers = {"Content-Type": "application/json"}
+    try:
+        yara_rule_db = index_yara_rule_in_db(parsed_rule, user=user)
+    except IntegrityError:
+        return None
+
+    create_document_with_id_url = (
+        f"{config.SEARCH_DB_URI}/api/yara-rules/_doc/{parsed_rule['rule_id']}"
+    )
+    if yara_rule_db.user.id:
+        create_document_with_id_url = f"{config.SEARCH_DB_URI}/api/{yara_rule_db.user.id}-yara-rules/_doc/{parsed_rule['rule_id']}"
+
+    parsed_rule.pop("content")
+    with requests.put(
+        url=create_document_with_id_url,
+        json=parsed_rule,
+        headers=headers,
+        auth=(config.SEARCH_DB_USER, config.SEARCH_DB_PASSWORD),
+    ) as response:
+        return response
+
+
+class RuleIndexHandler(FileSystemEventHandler):
+    def on_modified(self, event):
+        """
+        Handle a file system event. If a new YARA rule is added, index it.
+        If a new YARA rule collection is added, index all the rules in the collection.
+        Args:
+            event: The file system event to handle.
+
+        Returns: None
+
+        """
+        if event.is_directory:
+            return
+        if not event.src_path.lower().endswith(
+            ".yara"
+        ) and not event.src_path.lower().endswith(".yar"):
+            return
         for rule in parse_yara_rules_from_path(event.src_path):
             index_yara_rule(rule)
-            try:
-                YaraRule(
-                    yara_id=rule["rule_id"],
-                    user=import_job.user,
-                    import_job=import_job,
-                    collection=yara_rule_collection,
-                ).save()
-            except ValueError:
-                continue
-            except IntegrityError:
-                continue
 
 
 class Command(BaseCommand):

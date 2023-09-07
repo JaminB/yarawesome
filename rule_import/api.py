@@ -5,8 +5,9 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from yarawesome import config
 from core.models import ImportYaraRuleJob, YaraRule, YaraRuleCollection
+from yarawesome import config
+
 from .serializers import CreateImportJobSerializer, ImportJobSerializer
 
 

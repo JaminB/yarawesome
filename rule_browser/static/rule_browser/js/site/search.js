@@ -13,4 +13,5 @@ function createSearchRuleViewers() {
         });
     });
     $(".loader").hide();
+    editor.update();
 }

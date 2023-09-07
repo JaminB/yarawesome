@@ -30,8 +30,9 @@
                     <thead>
                     <tr>
                         <th class="col-md-2">Name</th>
-                        <th class="col-md-4">Description</th>
-                        <th class="col-md-6">Rule</th>
+                        <th class="col-md-3">Description</th>
+                        <th class="col-md-2">Collection</th>
+                        <th class="col-md-5">Rule</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -39,8 +40,9 @@
                     <tr>
                         <td><a href="/rules/{{result.id}}">{{ result.name }}</a></td>
                         <td><p>{{ result.description }}</p></td>
+                        <td><a href="/rules/search/?term=collection_id: {{result.collection.id}}"> {{ result.collection.name }}</a></td>
                         <td class="editor-container">
-                            <a class="btn btn-sm btn-secondary open-in-editor" href="/rules/{{result.id}}/editor">Open in Editor</a>
+                            <a class="btn btn-sm btn-dark open-in-editor" href="/rules/{{result.id}}/editor"><i class="fa-solid fa-pen"></i></a>
                             <div style="display: flex; justify-content: center; align-items: center;">
                                 <img src="{% static 'core/img/loader.svg' %}" class="loader"/>
                             </div>

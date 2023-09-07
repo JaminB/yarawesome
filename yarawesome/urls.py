@@ -24,6 +24,7 @@ from rule_editor import api as rule_editor_api
 from rule_editor import views as rule_editor_views
 from rule_import import api as rule_import_api
 from rule_import import views as rule_import_views
+from rule_collections import views as rule_collections_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -56,6 +57,9 @@ urlpatterns = [
     path("rules/<str:rule_id>/editor", rule_editor_views.editor, name="editor-open"),
     path("rules/search/", rule_browser_views.search, name="search"),
     path("rules/<str:rule_id>", rule_browser_views.rule, name="rule"),
+    path(
+        "my_collections/", rule_collections_views.my_collections, name="my-collections"
+    ),
     path("my_imports/", rule_import_views.my_imports, name="my-imports"),
     path("", core_views.index, name="home"),
 ]

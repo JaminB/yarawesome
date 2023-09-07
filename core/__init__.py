@@ -1,4 +1,5 @@
 import os
+
 from yarawesome import settings
 
 os.makedirs(f"{settings.MEDIA_ROOT}/uploads/", exist_ok=True)

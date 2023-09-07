@@ -1,10 +1,11 @@
 import os
 import shutil
+
 import patoolib
 from rest_framework import serializers
-from yarawesome.settings import MEDIA_ROOT
 
 from core.models import ImportYaraRuleJob
+from yarawesome.settings import MEDIA_ROOT
 
 
 def extract_specific_files(

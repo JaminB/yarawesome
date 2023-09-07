@@ -7,12 +7,13 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.models import YaraRule
 from core.management.commands import rule_indexer
 from rule_browser.api import make_lookup_rule_request
 from rule_browser.serializers import RuleLookupSerializer
 
 
-def parse_lookup_rule_response_verbose(response: requests.Response) -> dict:
+def parse_lookup_rule_response_verbose(yara_rule: YaraRule) -> dict:
     """
     Parse the response from a lookup rule request.
 
@@ -22,25 +23,15 @@ def parse_lookup_rule_response_verbose(response: requests.Response) -> dict:
     Returns:
         dict: Parsed rule information.
     """
-    try:
-        hit = response.json().get("hits", {}).get("hits", [])[-1]
-    except IndexError:
-        return {"yara_rule": None}
-    try:
-        with open(hit["_source"]["path_on_disk"], "r") as fin:
-            hit["_source"].pop("path_on_disk")
-            hit["_source"].pop("@timestamp")
-            parser = plyara.Plyara()
-            raw_rule = fin.read().strip()
-            parsed_yara_rule = parser.parse_string(raw_rule)[-1]
-            yara_rule = {
-                **parsed_yara_rule,
-                "rule": raw_rule,
-            }
+    parser = plyara.Plyara()
+    raw_rule = yara_rule.content
+    parsed_yara_rule = parser.parse_string(raw_rule)[-1]
+    yara_rule = {
+        **parsed_yara_rule,
+        "rule": raw_rule,
+    }
 
-            return {"yara_rule": yara_rule}
-    except FileNotFoundError:
-        return {"yara_rule": None}
+    return {"yara_rule": yara_rule}
 
 
 class RuleEditorResource(APIView):
@@ -48,9 +39,9 @@ class RuleEditorResource(APIView):
         serializer = RuleLookupSerializer(data=kwargs)
         serializer.is_valid(raise_exception=True)
         rule_id = serializer.validated_data["rule_id"]
-        response = make_lookup_rule_request(rule_id)
-        if response.status_code == 200:
-            parsed_response = parse_lookup_rule_response_verbose(response)
+        yara_rule = make_lookup_rule_request(rule_id, user=request.user)
+        if yara_rule:
+            parsed_response = parse_lookup_rule_response_verbose(yara_rule)
             if parsed_response.get("yara_rule"):
                 return Response(parsed_response, status=status.HTTP_200_OK)
             else:
@@ -58,12 +49,6 @@ class RuleEditorResource(APIView):
                     {"error": "Could not locate a rule with this id."},
                     status=status.HTTP_404_NOT_FOUND,
                 )
-
-        elif response.status_code == 401:
-            return Response(
-                {"error": "Could not authenticate to search backend."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
 
         else:
             return Response(
@@ -88,6 +73,7 @@ class RuleEditorResource(APIView):
 
             # Extract the 'yara_rule' value
         yara_rule = data["yara_rule"]
+
         try:
             parsed_yara_rule = rule_indexer.parse_yara_rules_from_raw(yara_rule)[0]
         except ParseError as e:
@@ -98,7 +84,7 @@ class RuleEditorResource(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         parsed_yara_rule["rule_id"] = rule_id
-        rule_indexer.index_yara_rule(parsed_yara_rule)
+        rule_indexer.index_yara_rule(parsed_yara_rule, user=request.user)
 
         # Respond with a success message or appropriate response
         return Response({"message": "YARA rule updated successfully"})
