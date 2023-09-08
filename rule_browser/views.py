@@ -1,19 +1,16 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
-from .api import (
-    make_lookup_rule_request,
-    make_search_request,
-    parse_lookup_rule_response,
-    parse_search_response,
-)
+from core.utils import database, search_index
 
 
 @login_required
 def rule(request, rule_id: str):
-    yara_rule = parse_lookup_rule_response(
-        make_lookup_rule_request(rule_id, request.user)
-    )
+    yara_rule = database.lookup_yara_rule(rule_id, user=request.user)
+    if not yara_rule:
+        return redirect("/rules/search/")
+    yara_rule = database.parse_lookup_rule_response(yara_rule)
+
     context = {"rule": yara_rule["yara_rule"]}
     return render(request, "rule_browser/rule.html", context=context)
 
@@ -26,10 +23,12 @@ def search(request):
         term = "*"
     start = int(request.GET.get("start", 0))
     max_results = int(request.GET.get("max_results", 10))
-    response = make_search_request(term, start, max_results, user=request.user)
+    response = search_index.search_yara_rules_index(
+        term, start, max_results, user=request.user
+    )
     if response.status_code == 200:
-        search_results = parse_search_response(
-            response, term=term, start=start, max_results=max_results
+        search_results = search_index.contextualize_yara_rules_search_response(
+            response, term=term, start=start, max_results=max_results, user=request.user
         )
     else:
         search_results = {

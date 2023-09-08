@@ -7,9 +7,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.models import YaraRule
 from core.management.commands import rule_indexer
-from rule_browser.api import make_lookup_rule_request
+from core.models import YaraRule
+from core.utils import database, search_index
 from rule_browser.serializers import RuleLookupSerializer
 
 
@@ -39,7 +39,7 @@ class RuleEditorResource(APIView):
         serializer = RuleLookupSerializer(data=kwargs)
         serializer.is_valid(raise_exception=True)
         rule_id = serializer.validated_data["rule_id"]
-        yara_rule = make_lookup_rule_request(rule_id, user=request.user)
+        yara_rule = database.lookup_yara_rule(rule_id, user=request.user)
         if yara_rule:
             parsed_response = parse_lookup_rule_response_verbose(yara_rule)
             if parsed_response.get("yara_rule"):
@@ -65,12 +65,10 @@ class RuleEditorResource(APIView):
         except json.JSONDecodeError:
             return Response({"error": "Invalid JSON data"}, status=400)
 
-            # Check if 'yara_rule' is in the JSON data
         if "yara_rule" not in data:
             return Response(
                 {"error": 'Missing "yara_rule" key in JSON data'}, status=400
             )
-
             # Extract the 'yara_rule' value
         yara_rule = data["yara_rule"]
 
@@ -84,7 +82,7 @@ class RuleEditorResource(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         parsed_yara_rule["rule_id"] = rule_id
-        rule_indexer.index_yara_rule(parsed_yara_rule, user=request.user)
+        search_index.index_yara_rule(parsed_yara_rule, user=request.user)
 
         # Respond with a success message or appropriate response
         return Response({"message": "YARA rule updated successfully"})

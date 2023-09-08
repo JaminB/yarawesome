@@ -1,8 +1,6 @@
 {% extends 'core/base.html' %}
 {% load static %}
 {% block styles %}
-<link rel="stylesheet" href="{% static 'rule_editor/css/common/codemirror.css' %}">
-<link rel="stylesheet" href="{% static 'rule_editor/css/common/themes/base16-dark.css' %}">
 <link rel="stylesheet" href="{% static 'rule_collections/css/site/styles.css' %}">
 {% endblock %}
 
@@ -13,9 +11,10 @@
         <br>
         <div class="card rule-collections-container">
             <div class="card-body">
-                <table class="table">
+                <table class="table table-responsive-lg info-table">
                     <thead>
                     <tr>
+                        <th></th>
                         <th></th>
                         <th></th>
                         <th>Created</th>
@@ -27,10 +26,35 @@
                     <tbody>
                     {% for collection in collections %}
                     <tr>
-                        <td><a class="btn btn-sm btn-dark" href="/my_collections/{{collection.id}}/"><i
-                                class="fa-solid fa-pen"></i></a></td>
-                        <td><img class="collection-icon" src="/static/core/img/icons/collections/{{collection.icon}}.png"></td>
-                        <td>{{collection.created_time}}</td>
+                        <td><a class="btn btn-sm btn-dark" href="#"><i
+                                class="fa-solid fa-pen" data-bs-toggle="offcanvas"
+                                data-bs-target="#side-panel-popout" aria-controls="offcanvasRight"></i></a></td>
+                        {% if collection.public %}
+                        <td>
+                            <button disabled class="btn btn-sm btn-dark publish-collection-button"
+                                    data-bs-toggle="offcanvas"
+                                    data-collection-id="{{collection.id}}"
+                                    data-name="{{collection.name}}"
+                                    data-description="{{collection.description}}"
+                                    data-rule-count="{{collection.get_rule_count}}"
+                                    data-bs-target="#side-panel-popout" aria-controls="offcanvasRight"><i
+                                    class="fa-solid fa-cloud-arrow-up"></i></button>
+                        </td>
+                        {% else %}
+                        <td>
+                            <button class="btn btn-sm btn-dark publish-collection-button" data-bs-toggle="offcanvas"
+                                    data-bs-target="#side-panel-popout"
+                                    data-collection-id="{{collection.id}}"
+                                    data-name="{{collection.name}}"
+                                    data-description="{{collection.description}}"
+                                    data-rule-count="{{collection.get_rule_count}}"
+                                    aria-controls="offcanvasRight"><i
+                                    class="fa-solid fa-cloud-arrow-up"></i></button>
+                        </td>
+                        {% endif %}
+                        <td><img class="collection-icon"
+                                 src="/static/core/img/icons/collections/{{collection.icon}}.png"></td>
+                        <td><span class="badge bg-danger badge-large">{{collection.created_time}}</span></td>
                         <td>{{collection.name}}</td>
                         <td>{{collection.description}}</td>
                         <td>{{collection.get_rule_count}}</td>
@@ -46,13 +70,19 @@
         <br>
     </div>
 </div>
+<div class="row">
+    <div class="offcanvas offcanvas-start vw-100" tabindex="-1" id="side-panel-popout"
+         aria-labelledby="side-panel-popout-title">
+        <div class="offcanvas-header">
+            <h5 id="side-panel-popout-title"></h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" id="side-panel-popout-body">
+            ...
+        </div>
+    </div>
+</div>
 {% endblock %}
 {% block scripts %}
-<script src="{% static 'rule_editor/js/common/codemirror.js' %}"></script>
-<script src="{% static 'rule_editor/js/site/lexers/yara.js' %}"></script>
-<script src="{% static 'rule_browser/js/site/search.js' %}"></script>
-
-<script>
-    createSearchRuleViewers();
-</script>
+<script src="{% static 'rule_collections/js/site/collections.js' %}"></script>
 {% endblock %}

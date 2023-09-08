@@ -1,4 +1,3 @@
-import requests
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.parsers import MultiPartParser
@@ -6,7 +5,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.models import ImportYaraRuleJob, YaraRule, YaraRuleCollection
-from yarawesome import config
 
 from .serializers import CreateImportJobSerializer, ImportJobSerializer
 

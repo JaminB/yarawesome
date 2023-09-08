@@ -3,30 +3,14 @@ import typing
 from hashlib import md5
 
 import plyara
-import requests
 from django.core.management.base import BaseCommand
-from django.db.utils import IntegrityError
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
-from django.contrib.auth.models import User
-from core.models import ImportYaraRuleJob, YaraRule, YaraRuleCollection
-from yarawesome import config
+
+from core.utils import search_index
 from yarawesome.settings import MEDIA_ROOT
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "yarawesome.settings")
-
-
-def get_icon_id_from_string(string: str):
-    """
-    Get an icon ID from a string.
-
-    Args:
-        string: The string to get an icon ID from.
-
-    Returns: An icon ID.
-
-    """
-    return int(md5(string.encode("utf-8")).hexdigest()[:8], 16) % 20
 
 
 def parse_yara_rule_from_index(yara_rules_index_path: str) -> typing.List[dict]:
@@ -125,103 +109,6 @@ def parse_yara_rules_from_path(yara_rule_path: str) -> typing.List[dict]:
     return flattened_rules
 
 
-def index_yara_rule_in_db(parsed_rule: dict, user: typing.Optional[User] = None):
-    """
-    Index a parsed YARA rule into the database. If the rule already exists, do nothing.
-    Args:
-        parsed_rule: A dictionary containing parsed YARA rule information.
-
-    Returns: A YaraRule instance.
-
-    """
-    if parsed_rule.get("path_on_disk"):
-        import_job_id = int(os.path.basename(parsed_rule["path_on_disk"]).split("_")[0])
-        collection_name = os.path.dirname(parsed_rule["path_on_disk"]).split("/")[-1]
-        import_job = ImportYaraRuleJob.objects.get(id=import_job_id)
-
-        yara_rule_collection = YaraRuleCollection()
-        yara_rule_collection.name = collection_name
-        yara_rule_collection.description = (
-            f"Generated from {yara_rule_collection.name}."
-        )
-        if not YaraRuleCollection.objects.filter(
-            import_job=import_job_id, name=collection_name
-        ).exists():
-            yara_rule_collection.user = import_job.user
-            yara_rule_collection.import_job = import_job
-            yara_rule_collection.icon = get_icon_id_from_string(collection_name)
-            yara_rule_collection.save()
-            print(
-                f"Creating new collection {yara_rule_collection.name} ({yara_rule_collection.id})"
-            )
-        else:
-            yara_rule_collection = (
-                YaraRuleCollection.objects.filter(
-                    import_job__id=import_job_id, name=collection_name
-                )
-                .all()
-                .latest("id")
-            )
-        yara_rule = YaraRule(
-            rule_id=parsed_rule["rule_id"],
-            content=parsed_rule["content"],
-            user=import_job.user,
-            import_job=import_job,
-            collection=yara_rule_collection,
-        )
-        yara_rule.save()
-        return yara_rule
-    else:
-        yara_rule = YaraRule.objects.filter(
-            rule_id=parsed_rule["rule_id"], user=user
-        ).first()
-        if yara_rule:
-            yara_rule.content = parsed_rule["content"]
-            yara_rule.save()
-        return yara_rule
-
-
-def index_yara_rule(parsed_rule: dict, user: typing.Optional[User] = None):
-    """
-    Index a parsed YARA rule into the search database.
-
-    Args:
-        user: The user making the search request.
-        parsed_rule (dict): A dictionary containing parsed YARA rule information.
-
-    Returns:
-        requests.Response: The response from the indexing request.
-    """
-    if not os.path.exists(config.YARA_RULES_COLLECTIONS_DIRECTORY):
-        os.mkdir(config.YARA_RULES_COLLECTIONS_DIRECTORY)
-    if parsed_rule.get("imports", []):
-        _import_str = ""
-        for _import in parsed_rule.get("imports", []):
-            if f"{_import}." in parsed_rule["content"]:
-                _import_str += f'import "{_import}"\n'
-        parsed_rule["content"] = _import_str + "\n" + parsed_rule["content"]
-    headers = {"Content-Type": "application/json"}
-    try:
-        yara_rule_db = index_yara_rule_in_db(parsed_rule, user=user)
-    except IntegrityError:
-        return None
-
-    create_document_with_id_url = (
-        f"{config.SEARCH_DB_URI}/api/yara-rules/_doc/{parsed_rule['rule_id']}"
-    )
-    if yara_rule_db.user.id:
-        create_document_with_id_url = f"{config.SEARCH_DB_URI}/api/{yara_rule_db.user.id}-yara-rules/_doc/{parsed_rule['rule_id']}"
-
-    parsed_rule.pop("content")
-    with requests.put(
-        url=create_document_with_id_url,
-        json=parsed_rule,
-        headers=headers,
-        auth=(config.SEARCH_DB_USER, config.SEARCH_DB_PASSWORD),
-    ) as response:
-        return response
-
-
 class RuleIndexHandler(FileSystemEventHandler):
     def on_modified(self, event):
         """
@@ -240,7 +127,7 @@ class RuleIndexHandler(FileSystemEventHandler):
         ) and not event.src_path.lower().endswith(".yar"):
             return
         for rule in parse_yara_rules_from_path(event.src_path):
-            index_yara_rule(rule)
+            search_index.index_yara_rule(rule)
 
 
 class Command(BaseCommand):

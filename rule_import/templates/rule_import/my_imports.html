@@ -1,0 +1,45 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block styles %}
+
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <br>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-responsive-lg info-table">
+                    <thead>
+                    <tr>
+                        <th>
+                            Imported
+                        </th>
+                        <th>
+                            Rules
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for import in my_imports %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-danger badge-lg">{{ import.imported_at }}</span>
+                        </td>
+                        <td>
+                            <a href="/rules/search/?term=import_id: {{ import.id }}">{{ import.rule_count }}</a>
+                        </td>
+                        {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'rule_import/js/site/import.js' %}"></script>
+
+<script>
+</script>
+{% endblock %}

@@ -28,3 +28,12 @@
 .offcanvas-large {
     width: 100vw;
 }
+
+
+.info-table {
+  font-size: 12px;
+}
+
+.info-table td {
+    vertical-align: middle;
+}

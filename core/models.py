@@ -22,6 +22,7 @@ class YaraRuleCollection(models.Model):
 
     id = models.AutoField(primary_key=True)
     created_time = models.DateTimeField(auto_now_add=True)
+    public = models.BooleanField(default=False)
     name = models.CharField(max_length=64)
     description = models.CharField(max_length=32)
     icon = models.IntegerField(default=1)
@@ -45,6 +46,7 @@ class YaraRule(models.Model):
 
     id = models.AutoField(primary_key=True)
     rule_id = models.CharField(max_length=32)
+    public = models.BooleanField(default=False)
     content = models.TextField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     import_job = models.ForeignKey(ImportYaraRuleJob, on_delete=models.CASCADE)
@@ -54,7 +56,7 @@ class YaraRule(models.Model):
 
     class Meta:
         # A user can only have one rule with a given rule_id
-        unique_together = ("rule_id", "user")
+        unique_together = ("rule_id", "collection")
 
     def __str__(self):
         return self.id

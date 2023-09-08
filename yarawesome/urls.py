@@ -20,37 +20,45 @@ from django.urls import include, path
 from core import views as core_views
 from rule_browser import api as rule_browser_api
 from rule_browser import views as rule_browser_views
+from rule_collections import api as rule_collections_api
+from rule_collections import views as rule_collections_views
 from rule_editor import api as rule_editor_api
 from rule_editor import views as rule_editor_views
 from rule_import import api as rule_import_api
 from rule_import import views as rule_import_views
-from rule_collections import views as rule_collections_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("user/", include("django.contrib.auth.urls")),
     path(
+        "api/collections/<str:collection_id>/publish",
+        rule_collections_api.PublishYaraRuleCollectionResource.as_view(),
+        name="api-publish-collection",
+    ),
+    path(
         "api/rules/import/",
         rule_import_api.CreateImportJobResource.as_view(),
-        name="create-import-job",
+        name="api-create-import-job",
     ),
     path(
         "api/rules/import/<str:import_id>",
         rule_import_api.ImportJobResource.as_view(),
-        name="view-import-job",
+        name="api-view-import-job",
     ),
     path(
-        "api/rules/", rule_browser_api.RuleSearchResource.as_view(), name="rule-search"
+        "api/rules/",
+        rule_browser_api.RuleSearchResource.as_view(),
+        name="api-rule-search",
     ),
     path(
         "api/rules/<str:rule_id>",
         rule_browser_api.RuleOpenResource.as_view(),
-        name="rule-view",
+        name="api-rule-view",
     ),
     path(
         "api/rules/<str:rule_id>/editor",
         rule_editor_api.RuleEditorResource.as_view(),
-        name="rule-editor",
+        name="api-rule-editor",
     ),
     path("editor/", rule_editor_views.editor, name="editor"),
     path("import/", rule_import_views.import_rule, name="import"),
