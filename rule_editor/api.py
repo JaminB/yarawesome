@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.management.commands import rule_indexer
+from core.management.commands import inotify_rule_indexer
 from core.models import YaraRule
 from core.utils import database, search_index
 from rule_browser.serializers import RuleLookupSerializer

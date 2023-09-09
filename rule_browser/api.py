@@ -14,6 +14,7 @@ class RuleSearchResource(APIView):
         term = serializer.validated_data["term"]
         start = serializer.validated_data["start"]
         max_results = serializer.validated_data["max_results"]
+
         response = search_index.search_yara_rules_index(
             term, start, max_results, user=request.user
         )

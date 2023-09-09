@@ -57,6 +57,15 @@ function initializeCollectionSidePanel() {
     });
 }
 
+function initializeModals(){
+    $('.collection-icon').click(function() {
+        bootbox.dialog({
+            message: `<center><h3>${$("#collection-name").html()}</h3><hr><img style="border-radius:100%" src="${$('.collection-icon').attr('src')}" /></center>`
+        })
+    });
+}
+
 $(document).ready(function () {
     initializeCollectionSidePanel();
+    initializeModals();
 });

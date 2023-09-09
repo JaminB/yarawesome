@@ -46,9 +46,9 @@ urlpatterns = [
         name="api-view-import-job",
     ),
     path(
-        "api/rules/",
+        "api/rules/mine/",
         rule_browser_api.RuleSearchResource.as_view(),
-        name="api-rule-search",
+        name="api-my-rules-search",
     ),
     path(
         "api/rules/<str:rule_id>",
@@ -63,11 +63,28 @@ urlpatterns = [
     path("editor/", rule_editor_views.editor, name="editor"),
     path("import/", rule_import_views.import_rule, name="import"),
     path("rules/<str:rule_id>/editor", rule_editor_views.editor, name="editor-open"),
-    path("rules/search/", rule_browser_views.search, name="search"),
+    path("rules/", rule_browser_views.shared_rules, name="shared-rules-search"),
+    path(
+        "rules/mine/",
+        rule_browser_views.my_rules,
+        name="my-rules-search",
+    ),
     path("rules/<str:rule_id>", rule_browser_views.rule, name="rule"),
     path(
-        "my_collections/", rule_collections_views.my_collections, name="my-collections"
+        "collections/<collection_id>",
+        rule_collections_views.collection,
+        name="collection",
     ),
-    path("my_imports/", rule_import_views.my_imports, name="my-imports"),
+    path(
+        "collections/",
+        rule_collections_views.shared_collections,
+        name="shared-collections",
+    ),
+    path(
+        "collections/mine/",
+        rule_collections_views.my_collections,
+        name="my-collections",
+    ),
+    path("imports/mine/", rule_import_views.my_imports, name="my-imports"),
     path("", core_views.index, name="home"),
 ]

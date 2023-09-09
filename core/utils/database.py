@@ -5,7 +5,7 @@ from hashlib import md5
 import plyara
 import requests
 from django.contrib.auth.models import User
-
+from yarawesome.settings import BASE_DIR
 from core.models import ImportYaraRuleJob, YaraRule, YaraRuleCollection
 
 rule_search_index = "yara-rules"
@@ -19,9 +19,14 @@ def get_icon_id_from_string(string: str):
         string: The string to get an icon ID from.
 
     Returns: An icon ID.
-
     """
-    return int(md5(string.encode("utf-8")).hexdigest()[:8], 16) % 20
+    collections_icon_path = os.path.join(
+        BASE_DIR, "core", "static", "core", "img", "icons", "collections"
+    )
+
+    return int(md5(string.encode("utf-8")).hexdigest()[:8], 16) % len(
+        os.listdir(collections_icon_path)
+    )
 
 
 def lookup_yara_rule(rule_id: str, user: typing.Optional[User] = None) -> YaraRule:
@@ -35,7 +40,10 @@ def lookup_yara_rule(rule_id: str, user: typing.Optional[User] = None) -> YaraRu
     Returns:
         requests.Response: The API response.
     """
-    yara_rule = YaraRule.objects.filter(rule_id=rule_id, user=user).first()
+    if not user:
+        yara_rule = YaraRule.objects.filter(rule_id=rule_id).first()
+    else:
+        yara_rule = YaraRule.objects.filter(rule_id=rule_id, user=user).first()
     return yara_rule
 
 
@@ -57,12 +65,11 @@ def parse_lookup_rule_response(yara_rule: YaraRule) -> dict:
             for d in parsed_yara_rule.get("metadata", [])
             for key, value in d.items()
         }
-
         yara_rule = {
             "rule_id": yara_rule.rule_id,
-            "name": parsed_yara_rule["metadata"].get("name"),
-            "description": parsed_yara_rule["metadata"].get("description"),
-            "author": parsed_yara_rule["metadata"].get("author"),
+            "name": parsed_yara_rule.get("rule_name"),
+            "description": parsed_yara_rule["metadata"].get("description", ""),
+            "author": parsed_yara_rule["metadata"].get("author", ""),
             "rule": yara_rule.content,
         }
         return {"yara_rule": yara_rule}

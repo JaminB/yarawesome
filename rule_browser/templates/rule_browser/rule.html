@@ -35,7 +35,10 @@
                 <hr>
                 <div class="editor-container">
                     <textarea hidden disabled class="yara-rule form-control">{{ rule.rule }}</textarea>
-                    <a class="btn btn-sm btn-dark open-in-editor" href="/rules/{{rule.rule_id}}/editor"><i class="fa-solid fa-pen"></i></a>
+                    {% if is_owner %}
+                        <a class="btn btn-sm btn-dark open-in-editor" href="/rules/{{rule.rule_id}}/editor"><i class="fa-solid fa-pen"></i></a>
+                    {% endif %}
+
                 </div>
             </div>
 

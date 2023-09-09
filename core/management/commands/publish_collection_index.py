@@ -1,4 +1,5 @@
 import plyara
+import plyara.exceptions
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
@@ -23,7 +24,12 @@ def build_rule_index_from_private_collection(
     rule_chunk = []
     upload_results = []
     for rule in yara_rules.iterator():
-        rule_chunk.append(database.parse_lookup_rule_response(rule))
+        try:
+            yara_rule = database.parse_lookup_rule_response(rule)["yara_rule"]
+            rule_chunk.append(yara_rule)
+        except plyara.exceptions.ParseError:
+            print("Encountered error while parsing rule: {}".format(rule.id))
+            continue
         if len(rule_chunk) == 600:
             upload_results.append(search_index.bulk_index_yara_rules(rule_chunk))
             rule_chunk = []

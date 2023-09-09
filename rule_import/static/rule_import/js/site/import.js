@@ -1,4 +1,3 @@
-// Initialize the import form
 
 let statusRefreshCount = 0;
 
@@ -13,8 +12,13 @@ function initializeImportForm() {
     });
     $("#import-form").on("submit", function (event) {
         event.preventDefault();
+        statusRefreshCount = 0;
         addImportFormEventOnSubmitHandler(this)
-    })
+    });
+    $("#import-input").on("click", function (event) {
+        $("#import-status-container").fadeOut();
+        statusRefreshCount = 101;
+    });
 }
 
 
@@ -26,7 +30,7 @@ function updateImportedRuleCount(importId) {
         success: function (response) {
             $("#rule-import-count").text(response["imported_rule_count"]);
             $("#rule-collection-count").text(response["collections_created"]);
-            $("#rule-import-search-link").attr("href", `/rules/search/?term=import_id: ${importId}`);
+            $("#rule-import-search-link").attr("href", `/rules/mine/?term=import_id: ${importId}`);
         },
         error: function (xhr, status, error) {
             console.error("API error:", error);

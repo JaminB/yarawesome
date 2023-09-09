@@ -6,10 +6,11 @@
 
 {% block content %}
     {% load mathfilters %}
+
     <div class="row justify-content-center">
         <div class="col-md-12">
             <br>
-            <form class="input-group mb-3" id="rule-search-form" action="/collections/mine/" method="GET">
+            <form class="input-group mb-3" id="rule-search-form" action="/collections/" method="GET">
                 <input type="text" class="form-control" placeholder="Search..." aria-label="Search"
                        aria-describedby="search-btn" name="term">
                 <input hidden type="text" class="form-control" name="start" value="0">
@@ -18,7 +19,6 @@
             </form>
         </div>
     </div>
-
     <div class="row">
         <div class="col-md-12 vh-75">
             <br>
@@ -27,7 +27,6 @@
                     <table class="table table-responsive-lg info-table">
                         <thead>
                         <tr>
-                            <th></th>
                             <th></th>
                             <th></th>
                             <th>Created</th>
@@ -39,43 +38,34 @@
                         <tbody>
                         {% for collection in collections %}
                             <tr>
-                                <td><a class="btn btn-sm btn-dark" href="#"><i
-                                        class="fa-solid fa-pen" data-bs-toggle="offcanvas"
-                                        data-bs-target="#side-panel-popout" aria-controls="offcanvasRight"></i></a></td>
-                                {% if collection.public %}
-                                    <td>
-                                        <button disabled class="btn btn-sm btn-dark publish-collection-button"
-                                                data-bs-toggle="offcanvas"
-                                                data-collection-id="{{ collection.id }}"
-                                                data-name="{{ collection.name }}"
-                                                data-description="{{ collection.description }}"
-                                                data-rule-count="{{ collection.get_rule_count }}"
-                                                data-bs-target="#side-panel-popout" aria-controls="offcanvasRight"><i
-                                                class="fa-solid fa-cloud-arrow-up"></i></button>
-                                    </td>
-                                {% else %}
-                                    <td>
-                                        <button class="btn btn-sm btn-dark publish-collection-button"
-                                                data-bs-toggle="offcanvas"
-                                                data-bs-target="#side-panel-popout"
-                                                data-collection-id="{{ collection.id }}"
-                                                data-name="{{ collection.name }}"
-                                                data-description="{{ collection.description }}"
-                                                data-rule-count="{{ collection.get_rule_count }}"
-                                                aria-controls="offcanvasRight"><i
-                                                class="fa-solid fa-cloud-arrow-up"></i></button>
-                                    </td>
-                                {% endif %}
-                                <td><a href="/collections/ {{ collection.id }}"><img
+                                <td>
+                                    {% if collection.is_owner %}
+                                        <a class="btn btn-sm btn-dark" href="#"><i
+                                                class="fa-solid fa-pen" data-bs-toggle="offcanvas"
+                                                data-bs-target="#side-panel-popout" aria-controls="offcanvasRight"></i>
+                                        </a>
+                                    {% else %}
+                                        <a class="btn btn-sm btn-dark" href="#"><i
+                                                class="fa-solid fa-clone" data-bs-toggle="offcanvas"
+                                                data-bs-target="#side-panel-popout" aria-controls="offcanvasRight"></i>
+                                        </a>
+                                    {% endif %}
+                                </td>
+                                <td><a href="/collections/{{ collection.id }}"><img
                                         class="collection-icon"
                                         src="/static/core/img/icons/collections/{{ collection.icon }}.png"></a></td>
                                 <td><span class="badge bg-danger badge-large">{{ collection.created_time }}</span></td>
-                                <td id="collection-name"><a href="/collections/{{ collection.id }}">{{ collection.name }}</a></td>
-                                </td>
+                                <td id="collection-name"><a href="/collections/{{ collection.id }}" >{{ collection.name }}</a></td>
                                 <td>{{ collection.description }}</td>
-                                <td>
-                                    <a href="/rules/mine/?term=collection_id: {{ collection.id }}">{{ collection.get_rule_count }}</a>
-                                </td>
+                                {% if collection.is_owner %}
+                                    <td>
+                                        <a href="/rules/mine/?term=collection_id: {{ collection.id }}">{{ collection.get_rule_count }}</a>
+                                    </td>
+                                {% else %}
+                                    <td>
+                                        <a href="/rules/?term=collection_id: {{ collection.id }}">{{ collection.get_rule_count }}</a>
+                                    </td>
+                                {% endif %}
                             </tr>
                         {% endfor %}
                         </tbody>

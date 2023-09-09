@@ -133,7 +133,6 @@ def contextualize_yara_rules_search_response(
         dict: Parsed search results.
     """
     results = []
-
     for hit in response.json().get("hits", {}).get("hits", []):
         collection = {}
         yara_rule_collection = (
@@ -170,7 +169,7 @@ def contextualize_yara_rules_search_response(
                     .content,
                 }
             )
-        except:
+        except Exception:
             print("Orphaned rule found in search index.")
     if term.strip().startswith("import_id:"):
         import_id = int(term.strip().split(":")[1])

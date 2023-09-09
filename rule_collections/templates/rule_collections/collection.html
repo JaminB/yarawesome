@@ -1,0 +1,62 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block styles %}
+<link rel="stylesheet" href="{% static 'rule_collections/css/site/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+{% load mathfilters %}
+<div class="row">
+    <div class="col-md-12 vh-75">
+        <br>
+        <div class="card rule-collections-container">
+            <div class="card-body">
+                <div class="float-end">
+                    <img class="collection-icon" src="/static/core/img/icons/collections/{{collection.icon}}.png">
+                </div>
+                <table class="table table-responsive">
+                    <tbody>
+                    <tr>
+                        <th>
+                            Name
+                        </th>
+                        <td>
+                            <b id="collection-name">{{ collection.name }}</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>
+                            {{ collection.description }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Rule Count</th>
+                        <td>
+                            {{ collection.get_rule_count }}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        <br>
+    </div>
+</div>
+<div class="row">
+    <div class="offcanvas offcanvas-start vw-100" tabindex="-1" id="side-panel-popout"
+         aria-labelledby="side-panel-popout-title">
+        <div class="offcanvas-header">
+            <h5 id="side-panel-popout-title"></h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" id="side-panel-popout-body">
+            ...
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'rule_collections/js/site/collections.js' %}"></script>
+{% endblock %}
