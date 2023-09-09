@@ -63,7 +63,7 @@ function saveEditorContent() {
     // Send the AJAX PUT request
     $.ajax({
         type: "PUT",
-        url: `/api/rules/${matches[1]}/editor`,
+        url: `/api/rules/${matches[1]}/editor/`,
         data: JSON.stringify(dataToSend),
         headers: { "X-CSRFToken": getCookie("csrftoken") },
         contentType: "application/json; charset=utf-8",
@@ -90,7 +90,7 @@ function openDebugSidePanel() {
 
     // Fetch YARA rule details from the API
     $.ajax({
-        url: `/api/rules/${matches[1]}/editor`,
+        url: `/api/rules/${matches[1]}/editor/`,
         method: "GET",
         success: function(response) {
             const rule = response["yara_rule"];

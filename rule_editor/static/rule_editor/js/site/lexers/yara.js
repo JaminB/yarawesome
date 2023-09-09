@@ -27,16 +27,13 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
     "them", "true", "uint16", "uint16be", "uint32", "uint32be", "uint8", "uint8be",
     "wide", "xor", "defined"
   ];
-  var singleLineComment = RegExp(/\/\/.*/);
-  var containsCommentStart = RegExp(/\/\*/);
-  var containsCommentEnd = RegExp(/\*\//);
-  var identifierRegex = RegExp( /^[^\s=]+(?=\s*=)/);
-  var variableRegex = RegExp(/\$\w*/);
-  var keywordRegex = new RegExp("\\b(" + keywords.join("|") + ")\\b", "g");
-  var assignedValueRegex = RegExp("/=(.+)/");
-  var assignedValueHexRegex = RegExp(/\{(.*?)\}/);
-  var isNumericRegex = RegExp(/^[0-9]+(?:\.[0-9]*)?$/);
-  var isBoolRegex = RegExp(/^(true|false)$/);
+  let singleLineComment = RegExp(/\/\/.*/);
+  let containsCommentStart = RegExp(/\/\*/);
+  let containsCommentEnd = RegExp(/\*\//);
+  let identifierRegex = RegExp( /^[^\s=]+(?=\s*=)/);
+  let variableRegex = RegExp(/\$\w*/);
+  let isNumericRegex = RegExp(/^[0-9]+(?:\.[0-9]*)?$/);
+  let isBoolRegex = RegExp(/^(true|false)$/);
 
   return {
     startState: function() {
@@ -63,6 +60,15 @@ CodeMirror.defineMode("yara", function(config, parserConfig) {
         updateVariableCount(state.variables.length);
         updateWarningCount(state.warnings.length);
       }
+      // Match keywords found outside rule definitions
+      if (!state.insideRuleDefinition && stream.match("import")) {
+          return "keyword";
+      }
+
+      if (!state.insideRuleDefinition && stream.match("rule")) {
+          return "keyword";
+      }
+
       // Match single line comments
       if (stream.match(singleLineComment)) {
         return "comment";

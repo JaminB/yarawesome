@@ -7,7 +7,31 @@ from rest_framework.views import APIView
 from core.management.commands import publish_collection_index
 from core.models import YaraRule, YaraRuleCollection
 
-from .serializers import RuleCollectionPublishRequestSerializer
+from .serializers import (
+    YaraRuleCollectionDeleteRequest,
+    YaraRuleCollectionPublishRequest,
+)
+
+
+class YaraRuleCollectionResource(APIView):
+    """
+    A view to view a YARA rule collection.
+    """
+
+    def delete(self, request, *args, **kwargs):
+        serializer = YaraRuleCollectionDeleteRequest(data=kwargs)
+        serializer.is_valid(raise_exception=True)
+        collection_id = serializer.validated_data["collection_id"]
+        yara_rule_collection = YaraRuleCollection.objects.filter(
+            id=collection_id, user=request.user
+        ).first()
+        if not yara_rule_collection:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"error": "Collection not found."},
+            )
+        yara_rule_collection.delete()
+        return Response(status=status.HTTP_200_OK, data={"deleted": True})
 
 
 class PublishYaraRuleCollectionResource(APIView):
@@ -20,7 +44,7 @@ class PublishYaraRuleCollectionResource(APIView):
         Publish a YARA rule collection.
         """
         set_to_public = True
-        serializer = RuleCollectionPublishRequestSerializer(data=kwargs)
+        serializer = YaraRuleCollectionPublishRequest(data=kwargs)
         serializer.is_valid(raise_exception=True)
         collection_id = serializer.validated_data["collection_id"]
         yara_rule_collection = YaraRuleCollection.objects.filter(
@@ -53,10 +77,13 @@ class PublishYaraRuleCollectionResource(APIView):
             status=status.HTTP_200_OK,
         )
 
-    def get(self, request, collection_id: int):
+    def get(self, request, *args, **kwargs):
         """
-        Get a YARA rule collection.
+        Check if a YARA rule collection is published.
         """
+        serializer = YaraRuleCollectionPublishRequest(data=kwargs)
+        serializer.is_valid(raise_exception=True)
+        collection_id = serializer.validated_data["collection_id"]
         yara_rule_collection = YaraRuleCollection.objects.filter(
             id=collection_id, user=request.user
         ).first()

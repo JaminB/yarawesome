@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from core.management.commands import inotify_rule_indexer
 from core.models import YaraRule
 from core.utils import database, search_index
-from rule_browser.serializers import RuleLookupSerializer
+from rules.serializers import RuleLookupSerializer
 
 
 def parse_lookup_rule_response_verbose(yara_rule: YaraRule) -> dict:
@@ -73,7 +73,9 @@ class RuleEditorResource(APIView):
         yara_rule = data["yara_rule"]
 
         try:
-            parsed_yara_rule = rule_indexer.parse_yara_rules_from_raw(yara_rule)[0]
+            parsed_yara_rule = inotify_rule_indexer.parse_yara_rules_from_raw(
+                yara_rule
+            )[0]
         except ParseError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except IndexError:

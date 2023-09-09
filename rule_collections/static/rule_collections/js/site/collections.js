@@ -1,4 +1,19 @@
-// A function that makes an ajax PUT request to `/api/collections/<collection_id>/publish`
+
+function deleteCollection() {
+    let sourceElement = event.target;
+    let collectionId = $(sourceElement).data("collectionId");
+    $(sourceElement).prop("disabled", true);
+    toastr.warning("Deleting collection...");
+    $.ajax({
+        url: `/api/collections/${collectionId}/`,
+        type: 'DELETE',
+        headers: { "X-CSRFToken": getCookie("csrftoken") },
+        contentType: "application/json; charset=utf-8",
+        success: function (response) {
+            window.location.reload();
+       }
+    });
+}
 
 function publishCollection() {
     let sourceElement = event.target;
@@ -6,7 +21,7 @@ function publishCollection() {
     $(sourceElement).prop("disabled", true);
     toastr.info("Publishing collection...");
     $.ajax({
-        url: `/api/collections/${collectionId}/publish`,
+        url: `/api/collections/${collectionId}/publish/`,
         type: 'PUT',
         headers: { "X-CSRFToken": getCookie("csrftoken") },
         contentType: "application/json; charset=utf-8",
@@ -14,6 +29,45 @@ function publishCollection() {
             window.location.reload();
        }
     });
+}
+
+
+function openDeleteCollectionSidePanel() {
+    // Set the collection ID in the side panel
+    let sourceElement = event.delegateTarget;
+    let collectionId = $(sourceElement).data("collectionId");
+    $("#side-panel-popout-title").text(`Delete Collection`);
+    let warningMessage = `<p>Deleting this collection will remove it from your personal rule index.</p>`
+    if ($(sourceElement).data("is-public") === "True") {
+        warningMessage = `<p>Deleting this collection will remove it from both your personal rule index and the <b>public</b> rule index</p>`;
+    }
+    $("#side-panel-popout-body").html(`
+        <p class="lead">Are you sure you want to delete this collection?</p>
+        <hr>
+        ${warningMessage}
+        <br>
+        <table class="table table-responsive">
+            <tbody>
+                <tr>
+                    <th>Name</th>
+                    <td><code>${$(sourceElement).data("name")}</code></td>
+                </tr>
+                <tr>
+                    <th>Description</th>
+                    <td>${$(sourceElement).data("description")}</td>
+                </tr>
+                <tr>
+                    <th>Rule Count</th>
+                    <th>${$(sourceElement).data("rule-count")}</th>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <div class="align-center">
+            <button class="btn btn-danger btn-lg float-end" onclick="deleteCollection()" data-collection-id="${collectionId}">
+            <i class="fa-solid fa-trash"></i> Delete</button>
+        </div>
+    `)
 }
 
 function openPublishCollectionSidePanel() {
@@ -44,7 +98,8 @@ function openPublishCollectionSidePanel() {
         </table>
         <br>
         <div class="align-center">
-            <button class="btn btn-danger btn-lg float-end" onclick="publishCollection()" data-collection-id="${collectionId}">Publish</button>
+            <button class="btn btn-danger btn-lg float-end" onclick="publishCollection()" data-collection-id="${collectionId}">
+            <i class="fa-solid fa-globe"></i> Publish</button>
         </div>
     `)
 }

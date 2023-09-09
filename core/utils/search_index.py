@@ -169,8 +169,19 @@ def contextualize_yara_rules_search_response(
                     .content,
                 }
             )
-        except Exception:
-            print("Orphaned rule found in search index.")
+        except Exception as e:
+            print("Orphaned rule found in search index.", e)
+            results.append(
+                {
+                    "id": hit["_source"]["rule_id"],
+                    "name": hit["_source"]["name"],
+                    "collection": collection,
+                    "description": hit["_source"].get("description", ""),
+                    "rule": None,
+                    "warning": "This rule has been deleted by the original owner, "
+                    "and will be removed from the index soon.",
+                }
+            )
     if term.strip().startswith("import_id:"):
         import_id = int(term.strip().split(":")[1])
         available = (

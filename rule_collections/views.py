@@ -27,6 +27,10 @@ def collection(request, collection_id):
         ).first()
     if not _collection:
         return redirect("/collections/")
+    if _collection.user == request.user:
+        _collection.is_owner = True
+    else:
+        _collection.is_owner = False
     return render(
         request, "rule_collections/collection.html", {"collection": _collection}
     )

@@ -1,62 +1,105 @@
 {% extends 'core/base.html' %}
 {% load static %}
 {% block styles %}
-<link rel="stylesheet" href="{% static 'rule_collections/css/site/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'rule_collections/css/site/styles.css' %}">
 {% endblock %}
 
 {% block content %}
-{% load mathfilters %}
-<div class="row">
-    <div class="col-md-12 vh-75">
-        <br>
-        <div class="card rule-collections-container">
-            <div class="card-body">
-                <div class="float-end">
-                    <img class="collection-icon" src="/static/core/img/icons/collections/{{collection.icon}}.png">
+    {% load mathfilters %}
+    <div class="row">
+        <div class="col-md-12 vh-75">
+            <br>
+            <div class="card rule-collection-container">
+                <div class="card-body">
+                    <div class="float-end">
+                        <img class="collection-icon" src="/static/core/img/icons/collections/{{ collection.icon }}.png">
+                    </div>
+                    <table class="table table-responsive">
+                        <tbody>
+                        <tr>
+                            <th>
+                                Name
+                            </th>
+                            <td>
+                                <b id="collection-name">
+                                    {% if collection.public %}
+                                        <i class="fa-solid fa-globe"></i>
+                                        &nbsp;
+                                    {% endif %}
+                                    {{ collection.name }}
+                                </b>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Description</th>
+                            <td>
+                                {{ collection.description }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Rule Count</th>
+                            <td>
+                                {{ collection.get_rule_count }}
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <table class="table table-responsive">
-                    <tbody>
-                    <tr>
-                        <th>
-                            Name
-                        </th>
-                        <td>
-                            <b id="collection-name">{{ collection.name }}</b>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Description</th>
-                        <td>
-                            {{ collection.description }}
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Rule Count</th>
-                        <td>
-                            {{ collection.get_rule_count }}
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div class="card-footer">
+                    <div class="float-end">
+                        {% if collection.public and not collection.is_owner %}
+                            <button class="btn btn-secondary" id="clone-collection-btn"><i
+                                    class="fa-solid fa-clone"></i></button>
+                        {% elif not collection.public and collection.is_owner %}
+                            <button class="btn btn-secondary"
+                                    id="publish-collection-btn"
+                                    data-bs-toggle="offcanvas"
+                                    data-bs-target="#side-panel-popout"
+                                    aria-controls="offcanvasRight"
+                                    data-collection-id="{{ collection.id }}"
+                                    data-name="{{ collection.name }}"
+                                    data-description="{{ collection.description }}"
+                                    data-rule-count="{{ collection.get_rule_count }}"
+                                    onClick="openPublishCollectionSidePanel()"
+                            ><i class="fa-solid fa-cloud-arrow-up"></i></button>
+                        {% endif %}
+                        {% if collection.is_owner %}
+                            <button class="btn btn-primary" id="edit-collection-btn"><i
+                                    class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="btn btn-danger"
+                                    id="delete-collection-btn"
+                                    data-bs-toggle="offcanvas"
+                                    data-bs-target="#side-panel-popout"
+                                    aria-controls="offcanvasRight"
+                                    data-collection-id="{{ collection.id }}"
+                                    data-name="{{ collection.name }}"
+                                    data-description="{{ collection.description }}"
+                                    data-rule-count="{{ collection.get_rule_count }}"
+                                    data-is-public="{{ collection.public }}"
+                                    onClick="openDeleteCollectionSidePanel()"
+                            ><i class="fa-solid fa-trash"></i>
+                        {% endif %}
+                        </button>
+                    </div>
+                </div>
             </div>
-
-        </div>
-        <br>
-    </div>
-</div>
-<div class="row">
-    <div class="offcanvas offcanvas-start vw-100" tabindex="-1" id="side-panel-popout"
-         aria-labelledby="side-panel-popout-title">
-        <div class="offcanvas-header">
-            <h5 id="side-panel-popout-title"></h5>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body" id="side-panel-popout-body">
-            ...
+            <br>
         </div>
     </div>
-</div>
+    <div class="row">
+        <div class="offcanvas offcanvas-start vw-100" tabindex="-1" id="side-panel-popout"
+             aria-labelledby="side-panel-popout-title">
+            <div class="offcanvas-header">
+                <h5 id="side-panel-popout-title"></h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                        aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body" id="side-panel-popout-body">
+                ...
+            </div>
+        </div>
+    </div>
 {% endblock %}
 {% block scripts %}
-<script src="{% static 'rule_collections/js/site/collections.js' %}"></script>
+    <script src="{% static 'rule_collections/js/site/collections.js' %}"></script>
 {% endblock %}

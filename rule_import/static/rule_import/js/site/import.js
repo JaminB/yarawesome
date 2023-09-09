@@ -17,6 +17,7 @@ function initializeImportForm() {
     });
     $("#import-input").on("click", function (event) {
         $("#import-status-container").fadeOut();
+        $("#import-welcome-container").fadeOut();
         statusRefreshCount = 101;
     });
 }

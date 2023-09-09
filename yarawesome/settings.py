@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "core",
     "rule_editor",
-    "rule_browser",
+    "rules",
     "rule_collections",
     "rule_import",
     "django.contrib.admin",

@@ -38,23 +38,40 @@
                         </thead>
                         <tbody>
                         {% for result in search_results.results %}
-                            <tr>
-                                <td><a class="btn btn-sm btn-dark" href="#"><i
-                                        class="fa-solid fa-clone"></i></a>
-                                </td>
-                                <td><a href="/rules/{{ result.id }}">{{ result.name }}</a></td>
-                                <td><p>{{ result.description }}</p></td>
-                                <td>
-                                    <a href="?term=collection_id: {{ result.collection.id }}"> {{ result.collection.name }}</a>
-                                </td>
-                                <td class="editor-container">
-                                    <div style="display: flex; justify-content: center; align-items: center;">
-                                        <img src="{% static 'core/img/loader.svg' %}" class="loader"/>
-                                    </div>
-                                    <textarea hidden disabled
-                                              class="yara-rule form-control">{{ result.rule }}</textarea>
-                                </td>
-                            </tr>
+                            {% if result.rule %}
+                                <tr>
+                                    <td><a class="btn btn-sm btn-dark" href="#"><i
+                                            class="fa-solid fa-clone"></i></a>
+                                    </td>
+                                    <td><a href="/rules/{{ result.id }}">{{ result.name }}</a></td>
+                                    <td><p>{{ result.description }}</p></td>
+                                    <td>
+                                        <a href="/collections/{{ result.collection.id }}"> {{ result.collection.name }}</a>
+                                    </td>
+                                    <td class="editor-container">
+                                        <div style="display: flex; justify-content: center; align-items: center;">
+                                            <img src="{% static 'core/img/loader.svg' %}" class="loader"/>
+                                        </div>
+                                        <textarea hidden disabled
+                                                  class="yara-rule form-control">{{ result.rule }}</textarea>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td>
+                                        <button disabled class="btn btn-sm btn-dark"><i
+                                                class="fa-solid fa-pen"></i></button>
+                                    </td>
+                                    <td>{{ result.name }}</td>
+                                    <td><p>{{ result.description }}</p></td>
+                                    <td>
+                                        {{ result.collection.name }}
+                                    </td>
+                                    <td class="text-danger">
+                                        <b>Removed by user.</b>
+                                    </td>
+                                </tr>
+                            {% endif %}
                         {% endfor %}
                         </tbody>
                     </table>
