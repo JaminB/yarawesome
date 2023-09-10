@@ -10,6 +10,7 @@ from core.models import YaraRule, YaraRuleCollection
 from .serializers import (
     YaraRuleCollectionDeleteRequest,
     YaraRuleCollectionPublishRequest,
+    YaraRuleCollectionUpdateRequest,
 )
 
 
@@ -17,6 +18,48 @@ class YaraRuleCollectionResource(APIView):
     """
     A view to view a YARA rule collection.
     """
+
+    def put(self, request, *args, **kwargs):
+        """
+        Update a YARA rule collection.
+        """
+
+        request_body = request.body.decode("utf-8")
+        data = None
+        if request_body:
+            try:
+                data = json.loads(request_body)
+                data.update(kwargs)
+            except json.JSONDecodeError:
+                return Response({"error": "Invalid JSON data"}, status=400)
+        if not data:
+            return Response({"error": "No payload provided"}, status=400)
+        serializer = YaraRuleCollectionUpdateRequest(data=data)
+        serializer.is_valid(raise_exception=True)
+        collection_id = serializer.validated_data["collection_id"]
+        yara_rule_collection = YaraRuleCollection.objects.filter(
+            id=collection_id, user=request.user
+        ).first()
+        if not yara_rule_collection:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"error": "Collection not found."},
+            )
+        yara_rule_collection.name = serializer.validated_data["name"]
+        yara_rule_collection.description = serializer.validated_data["description"]
+        yara_rule_collection.icon = serializer.validated_data["icon"]
+        yara_rule_collection.save()
+        return Response(
+            status=status.HTTP_200_OK,
+            data={
+                "collection": {
+                    "id": yara_rule_collection.id,
+                    "name": yara_rule_collection.name,
+                    "description": yara_rule_collection.description,
+                    "icon": yara_rule_collection.icon,
+                }
+            },
+        )
 
     def delete(self, request, *args, **kwargs):
         serializer = YaraRuleCollectionDeleteRequest(data=kwargs)

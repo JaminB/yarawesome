@@ -32,6 +32,52 @@ function deleteCollection(onSuccess, onFailure) {
     });
 }
 
+function editCollection(onSuccess, onFailure) {
+    // Get the source element and collection ID from the event target.
+    let sourceElement = event.target;
+    let collectionId = $(sourceElement).data("collectionId");
+
+    // Get collection information from input fields.
+    let collectionName = $("#collection-name-input").val();
+    let collectionDescription = $("#collection-description-input").val();
+    let collectionIcon = $("#collection-icon").data("icon");
+
+    // Prepare the payload for the PUT request.
+    let payload = {
+        "name": collectionName,
+        "description": collectionDescription,
+        "icon": collectionIcon
+    };
+    console.log(payload)
+
+    // Disable the source element and display an editing message.
+    $(sourceElement).prop("disabled", true);
+    toastr.info("Editing collection...");
+
+    // Send an AJAX PUT request to edit the collection.
+    $.ajax({
+        url: `/api/collections/${collectionId}/`,
+        type: 'PUT',
+        headers: {"X-CSRFToken": getCookie("csrftoken")},
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify(payload),
+        success: function (response) {
+            if (onSuccess !== undefined) {
+                onSuccess(response);
+            } else {
+                window.location.reload();
+            }
+        },
+        error: function (response) {
+            if (onFailure !== undefined) {
+                onFailure(response);
+            } else {
+                toastr.error("Failed to edit collection.");
+            }
+        }
+    });
+}
+
 /**
  * Publishes a collection.
  *
@@ -155,7 +201,7 @@ function onIconSelect(){
     let selectedIconSrc = $(event.target).parent().find("img").first().attr("src");
     let selectedIconId = $(event.target).parent().find("img").first().data("iconId");
     $("#collection-icon").attr("src", selectedIconSrc);
-    $("#collection-icon").data("iconId", selectedIconId);
+    $("#collection-icon").data("icon", selectedIconId);
     bootbox.hideAll();
 }
 
@@ -225,7 +271,7 @@ function openEditCollectionSidePanel(onSuccess, onFailure) {
                     <!-- Add an image holder here -->
                     <div class="input-group-prepend" onClick="iconSelector()">
                         <span class="input-group-text">
-                            <img id="collection-icon" class="collection-icon" src="/static/core/img/icons/collections/${collectionIcon}.png" alt="Image" width="30" height="30">
+                            <img id="collection-icon" class="collection-icon" data-icon="${collectionIcon}" src="/static/core/img/icons/collections/${collectionIcon}.png" alt="Image" width="30" height="30">
                         </span>
                     </div>
         
@@ -246,7 +292,7 @@ function openEditCollectionSidePanel(onSuccess, onFailure) {
         <br>
         <div class="align-center">
             <button class="btn btn-danger btn-lg float-end" 
-            onclick="editCollection(${onSuccess}, ${onFailure})" 
+            onclick="editCollection()" 
             data-collection-id="${collectionId}">
             <i class="fa-solid fa-pen-to-square"></i> Edit</button>
         </div>
@@ -278,3 +324,11 @@ $(document).ready(function () {
     initializeCollectionSidePanel();
     initializeModals();
 });
+
+
+/**
+ * Edits a collection using an AJAX PUT request.
+ *
+ * @param {Function} onSuccess - A callback function to execute on a successful edit.
+ * @param {Function} onFailure - A callback function to execute on a failed edit.
+ */
