@@ -17,7 +17,7 @@ def rule(request, rule_id: str):
     yara_rule = database.parse_lookup_rule_response(yara_rule)
 
     context = {"rule": yara_rule["yara_rule"], "is_owner": is_owner}
-    return render(request, "rule_browser/rule.html", context=context)
+    return render(request, "rules/rule.html", context=context)
 
 
 @login_required
@@ -44,7 +44,7 @@ def my_rules(request):
             "search_parameters": {"start": start, "max_results": max_results},
         }
     context["search_results"] = search_results
-    return render(request, "rule_browser/my_rules.html", context=context)
+    return render(request, "rules/my_rules.html", context=context)
 
 
 @login_required
@@ -69,4 +69,4 @@ def shared_rules(request):
             "search_parameters": {"start": start, "max_results": max_results},
         }
     context["search_results"] = search_results
-    return render(request, "rule_browser/shared_rules.html", context=context)
+    return render(request, "rules/shared_rules.html", context=context)

@@ -3,7 +3,7 @@
 {% block styles %}
     <link rel="stylesheet" href="{% static 'rule_editor/css/common/codemirror.css' %}">
     <link rel="stylesheet" href="{% static 'rule_editor/css/common/themes/base16-dark.css' %}">
-    <link rel="stylesheet" href="{% static 'rule_browser/css/site/search.css' %}">
+    <link rel="stylesheet" href="{% static 'rules/css/site/search.css' %}">
 
 {% endblock %}
 
@@ -13,7 +13,7 @@
     <div class="row justify-content-center">
         <div class="col-md-12">
             <br>
-            <form class="input-group mb-3" id="rule-search-form" action="/rules/mine/" method="GET">
+            <form class="input-group mb-3" id="rule-search-form" action="/rules/" method="GET">
                 <input type="text" class="form-control" placeholder="Search..." aria-label="Search"
                        aria-describedby="search-btn" name="term">
                 <input hidden type="text" class="form-control" name="start" value="0">
@@ -40,8 +40,9 @@
                         {% for result in search_results.results %}
                             {% if result.rule %}
                                 <tr>
-                                    <td><a class="btn btn-sm btn-dark" href="/rules/{{ result.id }}/editor"><i
-                                            class="fa-solid fa-pen"></i></a></td>
+                                    <td><a class="btn btn-sm btn-dark" href="#"><i
+                                            class="fa-solid fa-clone"></i></a>
+                                    </td>
                                     <td><a href="/rules/{{ result.id }}">{{ result.name }}</a></td>
                                     <td><p>{{ result.description }}</p></td>
                                     <td>
@@ -57,8 +58,10 @@
                                 </tr>
                             {% else %}
                                 <tr>
-                                    <td><button disabled class="btn btn-sm btn-dark"><i
-                                            class="fa-solid fa-pen"></i></button></td>
+                                    <td>
+                                        <button disabled class="btn btn-sm btn-dark"><i
+                                                class="fa-solid fa-pen"></i></button>
+                                    </td>
                                     <td>{{ result.name }}</td>
                                     <td><p>{{ result.description }}</p></td>
                                     <td>
@@ -99,7 +102,7 @@
 {% block scripts %}
     <script src="{% static 'rule_editor/js/common/codemirror.js' %}"></script>
     <script src="{% static 'rule_editor/js/site/lexers/yara.js' %}"></script>
-    <script src="{% static 'rule_browser/js/site/search.js' %}"></script>
+    <script src="{% static 'rules/js/site/search.js' %}"></script>
 
     <script>
         createSearchRuleViewers();

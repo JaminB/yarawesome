@@ -58,13 +58,25 @@
                                     aria-controls="offcanvasRight"
                                     data-collection-id="{{ collection.id }}"
                                     data-name="{{ collection.name }}"
+                                    data-icon="{{ collection.icon }}"
                                     data-description="{{ collection.description }}"
                                     data-rule-count="{{ collection.get_rule_count }}"
                                     onClick="openPublishCollectionSidePanel()"
                             ><i class="fa-solid fa-cloud-arrow-up"></i></button>
                         {% endif %}
                         {% if collection.is_owner %}
-                            <button class="btn btn-primary" id="edit-collection-btn"><i
+                            <button class="btn btn-primary" id="edit-collection-btn"
+                                    data-bs-toggle="offcanvas"
+                                    data-bs-target="#side-panel-popout"
+                                    aria-controls="offcanvasRight"
+                                    data-collection-id="{{ collection.id }}"
+                                    data-name="{{ collection.name }}"
+                                    data-icon="{{ collection.icon }}"
+                                    data-description="{{ collection.description }}"
+                                    data-rule-count="{{ collection.get_rule_count }}"
+                                    data-is-public="{{ collection.public }}"
+                                    onClick="openEditCollectionSidePanel(function(){window.location.href='/collections/mine'})"
+                            ><i
                                     class="fa-solid fa-pen-to-square"></i></button>
                             <button class="btn btn-danger"
                                     id="delete-collection-btn"
@@ -76,7 +88,7 @@
                                     data-description="{{ collection.description }}"
                                     data-rule-count="{{ collection.get_rule_count }}"
                                     data-is-public="{{ collection.public }}"
-                                    onClick="openDeleteCollectionSidePanel()"
+                                    onClick="openDeleteCollectionSidePanel(function(){window.location.href='/collections/mine'})"
                             ><i class="fa-solid fa-trash"></i>
                         {% endif %}
                         </button>

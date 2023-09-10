@@ -71,6 +71,12 @@ def parse_lookup_rule_response(yara_rule: YaraRule) -> dict:
             "description": parsed_yara_rule["metadata"].get("description", ""),
             "author": parsed_yara_rule["metadata"].get("author", ""),
             "rule": yara_rule.content,
+            "collection": {
+                "id": yara_rule.collection.id,
+                "name": yara_rule.collection.name,
+                "description": yara_rule.collection.description,
+                "icon": yara_rule.collection.icon,
+            },
         }
         return {"yara_rule": yara_rule}
     except FileNotFoundError:

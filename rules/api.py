@@ -56,7 +56,6 @@ class RuleSearchResource(APIView):
 
 
 class RuleOpenResource(APIView):
-
     def get(self, request, *args, **kwargs):
         serializer = RuleLookupSerializer(data=kwargs)
         serializer.is_valid(raise_exception=True)

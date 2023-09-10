@@ -1,0 +1,76 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'rule_editor/css/common/codemirror.css' %}">
+    <link rel="stylesheet" href="{% static 'rule_editor/css/common/themes/base16-dark.css' %}">
+    <link rel="stylesheet" href="{% static 'rules/css/site/rule.css' %}">
+{% endblock %}
+
+{% block content %}
+    {% load mathfilters %}
+    <div class="row">
+        <div class="col-md-12 vh-75">
+            <br>
+            <div class="card rule-container">
+                <div class="card-body">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <th>Name</th>
+                            <td>{{ rule.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Description</th>
+                            <td>{{ rule.description }}</td>
+                        </tr>
+                        {% if rule.author %}
+                            <tr>
+                                <th>Author</th>
+                                <td>{{ rule.author }}</td>
+                            </tr>
+                            <tr>
+                                <th>Collection</th>
+                                <td>
+                                    <a style="text-decoration: none;" href="/collections/{{ rule.collection.id }}">
+                                        <img class="collection-icon"
+                                             src="/static/core/img/icons/collections/{{ rule.collection.icon }}.png"/>
+                                    </a>
+                                    &nbsp;
+                                    <a href="/collections/{{ rule.collection.id }}">
+                                        <b style="font-size:18px">{{ rule.collection.name }}</b>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                        </tbody>
+                    </table>
+                    <br>
+                    <hr>
+                    <div class="editor-container">
+                        <textarea hidden disabled class="yara-rule form-control">{{ rule.rule }}</textarea>
+                        <div style="display: flex; justify-content: center; align-items: center;">
+                            <img src="{% static 'core/img/loader.svg' %}" class="loader"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    {% if is_owner %}
+                        <a class="btn btn-sm btn-primary float-end" href="/rules/{{ rule.rule_id }}/editor"><i
+                                class="fa-solid fa-pen"></i></a>
+                    {% endif %}
+                </div>
+
+            </div>
+            <br>
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'rule_editor/js/common/codemirror.js' %}"></script>
+    <script src="{% static 'rule_editor/js/site/lexers/yara.js' %}"></script>
+    <script src="{% static 'rules/js/site/search.js' %}"></script>
+
+    <script>
+        createSearchRuleViewers();
+    </script>
+{% endblock %}

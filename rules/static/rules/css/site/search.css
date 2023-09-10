@@ -4,6 +4,10 @@
   overflow: hidden;
 }
 
+.CodeMirror-wrap {
+  max-width:70vh;
+}
+
 .cm-oblique-text {
   font-style: oblique;
 }

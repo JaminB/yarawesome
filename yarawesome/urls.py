@@ -81,11 +81,6 @@ urlpatterns = [
     ),
     path("rules/<str:rule_id>/", rule_browser_views.rule, name="rule"),
     path(
-        "collections/<collection_id>",
-        rule_collections_views.collection,
-        name="collection",
-    ),
-    path(
         "collections/",
         rule_collections_views.shared_collections,
         name="shared-collections",
@@ -94,6 +89,11 @@ urlpatterns = [
         "collections/mine/",
         rule_collections_views.my_collections,
         name="my-collections",
+    ),
+    path(
+        "collections/<collection_id>/",
+        rule_collections_views.collection,
+        name="collection",
     ),
     path("imports/mine/", rule_import_views.my_imports, name="my-imports"),
     path("", core_views.index, name="home"),
