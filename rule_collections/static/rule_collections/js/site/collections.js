@@ -1,11 +1,25 @@
+function download(filename, text) {
+    let elem = document.createElement('a');
+    elem.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    elem.setAttribute('download', filename);
+
+    elem.style.display = 'none';
+    document.body.appendChild(elem);
+
+    elem.click();
+
+    document.body.removeChild(elem);
+}
+
 /**
  * Deletes a collection.
  *
+ * @param elem - The source element.
  * @param {function} onSuccess - Success callback function.
  * @param {function} onFailure - Failure callback function.
  */
-function deleteCollection(onSuccess, onFailure) {
-    let sourceElement = event.target;
+function deleteCollection(elem, onSuccess, onFailure) {
+    let sourceElement = $(elem);
     let collectionId = $(sourceElement).data("collectionId");
     console.log(sourceElement);
     $(sourceElement).prop("disabled", true);
@@ -32,9 +46,17 @@ function deleteCollection(onSuccess, onFailure) {
     });
 }
 
-function editCollection(onSuccess, onFailure) {
+
+function downloadCollection(elem, onSuccess, onFailure) {
     // Get the source element and collection ID from the event target.
-    let sourceElement = event.target;
+    let sourceElement = $(elem);
+    let collectionId = $(sourceElement).data("collectionId");
+    window.location="/api/collections/" + collectionId + "/raw/";
+}
+
+function editCollection(elem, onSuccess, onFailure) {
+    // Get the source element and collection ID from the event target.
+    let sourceElement = $(elem);
     let collectionId = $(sourceElement).data("collectionId");
 
     // Get collection information from input fields.
@@ -48,7 +70,6 @@ function editCollection(onSuccess, onFailure) {
         "description": collectionDescription,
         "icon": collectionIcon
     };
-    console.log(payload)
 
     // Disable the source element and display an editing message.
     $(sourceElement).prop("disabled", true);
@@ -80,12 +101,12 @@ function editCollection(onSuccess, onFailure) {
 
 /**
  * Publishes a collection.
- *
+ * @param elem - The source element.
  * @param {function} onSuccess - Success callback function.
  * @param {function} onFailure - Failure callback function.
  */
-function publishCollection(onSuccess, onFailure) {
-    let sourceElement = event.target;
+function publishCollection(elem, onSuccess, onFailure) {
+    let sourceElement = $(elem);
     let collectionId = $(sourceElement).data("collectionId");
     $(sourceElement).prop("disabled", true);
     toastr.info("Publishing collection...");
@@ -105,7 +126,7 @@ function publishCollection(onSuccess, onFailure) {
             if (onFailure !== undefined) {
                 onFailure(response);
             } else {
-                toastr.error("Failed to delete collection.");
+                toastr.error("Failed to publish collection.");
             }
         }
     });
@@ -149,11 +170,15 @@ function openDeleteCollectionSidePanel(onSuccess, onFailure) {
         </table>
         <br>
         <div class="align-center">
-            <button class="btn btn-danger btn-lg float-end" 
-            onclick="deleteCollection(${onSuccess}, ${onFailure})" 
+            <button id="submit-delete-collection-btn" class="btn btn-danger btn-lg float-end" 
             data-collection-id="${collectionId}">
             <i class="fa-solid fa-trash"></i> Delete</button>
         </div>
+        <script>
+            $("#submit-delete-collection-btn").click(function() {
+                deleteCollection(this, ${onSuccess}, ${onFailure});
+            });
+        </script>
     `);
 }
 
@@ -188,20 +213,26 @@ function openPublishCollectionSidePanel() {
         </table>
         <br>
         <div class="align-center">
-            <button class="btn btn-danger btn-lg float-end" onclick="publishCollection()" data-collection-id="${collectionId}">
+            <button id="submit-publish-collection-btn" class="btn btn-danger btn-lg float-end" data-collection-id="${collectionId}">
             <i class="fa-solid fa-globe"></i> Publish</button>
         </div>
+        <script>
+            $("#submit-publish-collection-btn").click(function(){
+                publishCollection(this, undefined, undefined);
+            });
+        </script>
     `);
 }
 
 /**
  * Handles the icon selection.
  */
-function onIconSelect(){
+function onIconSelect() {
+    let collectionIconSelector = $("#collection-icon");
     let selectedIconSrc = $(event.target).parent().find("img").first().attr("src");
     let selectedIconId = $(event.target).parent().find("img").first().data("iconId");
-    $("#collection-icon").attr("src", selectedIconSrc);
-    $("#collection-icon").data("icon", selectedIconId);
+    collectionIconSelector.attr("src", selectedIconSrc);
+    collectionIconSelector.data("icon", selectedIconId);
     bootbox.hideAll();
 }
 
@@ -216,7 +247,7 @@ function iconSelector() {
     for (let i = 1; i < iconsAvailable; i++) {
         tableRow += `<td>
             <div class="collection-icon-container" onClick="onIconSelect()">
-                <img src="/static/core/img/icons/collections/${i-1}.png"  alt="icon-${i-1}" data-icon-id="${i-1}">
+                <img src="/static/core/img/icons/collections/${i - 1}.png"  alt="icon-${i - 1}" data-icon-id="${i - 1}">
                 <div class="collection-icon-overlay">
                     
                 </div>
@@ -237,6 +268,47 @@ function iconSelector() {
         title: "Select a Collection Glyph",
         message: table
     });
+}
+
+/**
+ * Opens the download collection side panel.
+ **/
+function openDownloadCollectionSidePanel(elem, onSuccess, onFailure) {
+    // Set the collection ID in the side panel
+    let sourceElement = event.delegateTarget;
+    let collectionId = $(sourceElement).data("collectionId");
+    $("#side-panel-popout-title").text(`Download Collection`);
+    $("#side-panel-popout-body").html(`
+        <p class="lead">Download this collection?</p>
+        <hr>
+        <br>
+        <table class="table table-responsive">
+            <tbody>
+                <tr>
+                    <th>Name</th>
+                    <td><code>${$(sourceElement).data("name")}</code></td>
+                </tr>
+                <tr>
+                    <th>Description</th>
+                    <td>${$(sourceElement).data("description")}</td>
+                </tr>
+                <tr>
+                    <th>Rule Count</th>
+                    <th>${$(sourceElement).data("rule-count")}</th>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <div class="align-center">
+            <a download id="submit-download-collection-btn" href="/api/collections/${collectionId}/raw/"  class="btn btn-danger btn-lg float-end" data-collection-id="${collectionId}">
+            <i class="fa-solid fa-download" ></i> Download</a>
+        </div>
+        <script>
+                $("#submit-download-collection-btn").on("click", function(){
+                    toastr.info("Downloading collection, it may take a few seconds to start.");
+                });
+        </script>
+    `);
 }
 
 /**
@@ -291,11 +363,15 @@ function openEditCollectionSidePanel(onSuccess, onFailure) {
         </form>
         <br>
         <div class="align-center">
-            <button class="btn btn-danger btn-lg float-end" 
-            onclick="editCollection()" 
+            <button id="save-changes-btn" class="btn btn-success btn-lg float-end" 
             data-collection-id="${collectionId}">
-            <i class="fa-solid fa-pen-to-square"></i> Edit</button>
+            <i class="fa-solid fa-floppy-disk"></i> Save</button>
         </div>
+        <script>
+            $("#save-changes-btn").click(function(){
+                editCollection(this, ${onSuccess}, ${onFailure});
+            });
+        </script>
     `);
 }
 
@@ -305,8 +381,19 @@ function openEditCollectionSidePanel(onSuccess, onFailure) {
 function initializeCollectionSidePanel() {
     // Set the collection ID in the side panel
     $(".publish-collection-button").click(function () {
-        openPublishCollectionSidePanel();
+        openPublishCollectionSidePanel(function () {
+            window.location.href = '/collections/mine';
+        });
     });
+    $("#edit-collection-btn").click(function () {
+        openEditCollectionSidePanel(function () {
+            window.location.href = '/collections/mine';
+        })
+    });
+    $("#download-collection-btn").click(function () {
+        openDownloadCollectionSidePanel(this, undefined, undefined);
+    })
+
 }
 
 /**

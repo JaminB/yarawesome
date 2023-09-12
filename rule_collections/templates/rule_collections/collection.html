@@ -12,7 +12,8 @@
             <div class="card rule-collection-container">
                 <div class="card-body">
                     <div class="float-end">
-                        <img data-icon="{{ collection.icon }} }}" class="collection-icon" src="/static/core/img/icons/collections/{{ collection.icon }}.png">
+                        <img data-icon="{{ collection.icon }} }}" class="collection-icon"
+                             src="/static/core/img/icons/collections/{{ collection.icon }}.png">
                     </div>
                     <table class="table table-responsive">
                         <tbody>
@@ -48,9 +49,32 @@
                 <div class="card-footer">
                     <div class="float-end">
                         {% if collection.public and not collection.is_owner %}
-                            <button class="btn btn-secondary" id="clone-collection-btn"><i
+                            <button data-bs-toggle="offcanvas"
+                                    data-bs-target="#side-panel-popout"
+                                    aria-controls="offcanvasRight"
+                                    data-collection-id="{{ collection.id }}"
+                                    data-name="{{ collection.name }}"
+                                    data-icon="{{ collection.icon }}"
+                                    data-description="{{ collection.description }}"
+                                    data-rule-count="{{ collection.get_rule_count }}"
+                                    data-is-public="{{ collection.public }}"
+                                    class="btn btn-secondary" id="download-collection-btn"><i
+                                    class="fa-solid fa-download"></i></button>
+                            <button
+                                    class="btn btn-secondary" id="clone-collection-btn"><i
                                     class="fa-solid fa-clone"></i></button>
                         {% elif not collection.public and collection.is_owner %}
+                            <button data-bs-toggle="offcanvas"
+                                    data-bs-target="#side-panel-popout"
+                                    aria-controls="offcanvasRight"
+                                    data-collection-id="{{ collection.id }}"
+                                    data-name="{{ collection.name }}"
+                                    data-icon="{{ collection.icon }}"
+                                    data-description="{{ collection.description }}"
+                                    data-rule-count="{{ collection.get_rule_count }}"
+                                    data-is-public="{{ collection.public }}"
+                                    class="btn btn-secondary" id="download-collection-btn"><i
+                                    class="fa-solid fa-download"></i></button>
                             <button class="btn btn-secondary"
                                     id="publish-collection-btn"
                                     data-bs-toggle="offcanvas"
@@ -65,6 +89,17 @@
                             ><i class="fa-solid fa-cloud-arrow-up"></i></button>
                         {% endif %}
                         {% if collection.is_owner %}
+                            <button data-bs-toggle="offcanvas"
+                                    data-bs-target="#side-panel-popout"
+                                    aria-controls="offcanvasRight"
+                                    data-collection-id="{{ collection.id }}"
+                                    data-name="{{ collection.name }}"
+                                    data-icon="{{ collection.icon }}"
+                                    data-description="{{ collection.description }}"
+                                    data-rule-count="{{ collection.get_rule_count }}"
+                                    data-is-public="{{ collection.public }}"
+                                    class="btn btn-secondary" id="download-collection-btn"><i
+                                    class="fa-solid fa-download"></i></button>
                             <button class="btn btn-primary" id="edit-collection-btn"
                                     data-bs-toggle="offcanvas"
                                     data-bs-target="#side-panel-popout"
@@ -75,7 +110,6 @@
                                     data-description="{{ collection.description }}"
                                     data-rule-count="{{ collection.get_rule_count }}"
                                     data-is-public="{{ collection.public }}"
-                                    onClick="openEditCollectionSidePanel(function(){window.location.href='/collections/mine'})"
                             ><i
                                     class="fa-solid fa-pen-to-square"></i></button>
                             <button class="btn btn-danger"

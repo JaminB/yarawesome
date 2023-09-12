@@ -11,6 +11,34 @@ from core.models import ImportYaraRuleJob, YaraRule, YaraRuleCollection
 rule_search_index = "yara-rules"
 
 
+def get_yara_rule_collection_content(user: User, collection_id: int) -> str:
+    """
+    Download a YARA rule collection.
+    """
+
+    rules_string = ""
+    imports = []
+    yara_rule_collection = YaraRuleCollection.objects.filter(
+        id=collection_id, user=user
+    ).first()
+
+    if not yara_rule_collection:
+        yara_rule_collection = YaraRuleCollection.objects.filter(
+            id=collection_id, public=True
+        ).first()
+
+    if not yara_rule_collection:
+        return ""
+
+    for rule in yara_rule_collection.yararule_set.all():
+        imports.extend(plyara.Plyara().parse_string(rule.content)[0].get("imports", []))
+        rules_string += "\n\n" + rule.content
+
+    imports = set(imports)
+    import_string = "\n".join([f'import "{import_}"' for import_ in imports])
+    return import_string + rules_string
+
+
 def get_icon_id_from_string(string: str):
     """
     Get an icon ID from a string.

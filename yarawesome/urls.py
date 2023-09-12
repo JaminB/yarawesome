@@ -36,6 +36,11 @@ urlpatterns = [
         name="api-collection",
     ),
     path(
+        "api/collections/<str:collection_id>/raw/",
+        rule_collections_api.YaraRuleCollectionDownloadResource.as_view(),
+        name="api-collection-raw",
+    ),
+    path(
         "api/collections/<str:collection_id>/publish/",
         rule_collections_api.PublishYaraRuleCollectionResource.as_view(),
         name="api-publish-collection",

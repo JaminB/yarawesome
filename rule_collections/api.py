@@ -1,9 +1,10 @@
 import json
-
+from io import StringIO
+from django.http import FileResponse, HttpResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from core.utils import database
 from core.management.commands import publish_collection_index
 from core.models import YaraRule, YaraRuleCollection
 
@@ -12,6 +13,33 @@ from .serializers import (
     YaraRuleCollectionPublishRequest,
     YaraRuleCollectionUpdateRequest,
 )
+
+
+class YaraRuleCollectionDownloadResource(APIView):
+    """
+    A view to download a YARA rule collection.
+    """
+
+    def get(self, request, *args, **kwargs):
+        """
+        Download a YARA rule collection.
+        """
+        collection_id = kwargs["collection_id"]
+        concat_rules = database.get_yara_rule_collection_content(
+            request.user, collection_id
+        )
+        if concat_rules:
+            collection_name = YaraRuleCollection.objects.get(id=collection_id).name
+            response = HttpResponse(
+                concat_rules,
+                content_type="application/x-yara",
+            )
+            response[
+                "Content-Disposition"
+            ] = f'attachment; filename="{collection_name}.yara"'
+            return response
+
+        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
 
 class YaraRuleCollectionResource(APIView):
