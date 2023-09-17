@@ -17,15 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-from core import views as core_views
-from rules import api as rule_browser_api
-from rules import views as rule_browser_views
-from rule_collections import api as rule_collections_api
-from rule_collections import views as rule_collections_views
-from rule_editor import api as rule_editor_api
-from rule_editor import views as rule_editor_views
-from rule_import import api as rule_import_api
-from rule_import import views as rule_import_views
+from apps.core import views as core_views
+from apps.rules import api as rule_browser_api
+from apps.rules import views as rule_browser_views
+from apps.rule_collections import api as rule_collections_api
+from apps.rule_collections import views as rule_collections_views
+from apps.rule_editor import api as rule_editor_api
+from apps.rule_editor import views as rule_editor_views
+from apps.rule_import import api as rule_import_api
+from apps.rule_import import views as rule_import_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),

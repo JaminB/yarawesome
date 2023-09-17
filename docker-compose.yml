@@ -1,0 +1,33 @@
+version: '3.9'
+services:
+  zincsearch:
+    container_name: zincsearch
+    image: public.ecr.aws/zinclabs/zinc:latest
+    ports:
+    - "4080:4080"
+    environment:
+      ZINC_DATA_PATH: "/data"
+      ZINC_FIRST_ADMIN_USER: "admin"
+      ZINC_FIRST_ADMIN_PASSWORD: "admin"
+    volumes:
+      - indexes:/data
+    networks:
+      - development-network
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+
+
+volumes:
+  rabbitmq-data:
+  indexes:
+
+networks:
+  development-network:
+    external: false

@@ -1,0 +1,77 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block styles %}
+
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <br>
+            <form id="upload-form">
+                <div class="input-group mb-3">
+                    <label for="upload-input"></label>
+                    <input name="upload_input" type="file" id="upload-input" class="form-control" style="width:75%"
+                           placeholder="File Path">
+                    <label for="upload-option-select"></label>
+                    <button type="submit" class="btn btn-danger">Upload</button>
+                </div>
+            </form>
+            <div class="progress mt-3" style="display: none;">
+                <br>
+                <div class="progress-bar bg-danger progress-bar-animated" role="progressbar"
+                     aria-valuenow="0"
+                     aria-valuemin="0" aria-valuemax="100" style="width: 0%;">0%
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row justify-content-center">
+    <div id="upload-welcome-container" class="text-center">
+        <br>
+        <p class="lead"><small>Please upload a binary or archive containing binaries.</small></p>
+        <hr>
+        <p><small>Supported upload formats:
+            <code>.exe</code>,
+            <code>.dll</code>,
+            <code>.so</code>,
+            <code>.bin</code>,
+            <code>.zip</code>,
+            <code>.7z</code>,
+            <code>.rar</code>,
+            and
+            <code>.tar.gz</code>
+            .
+        </small></p>
+    </div>
+</div>
+<div class="row justify-content-center">
+    <div id="upload-status-container" class="col-md-12 text-center" style="display:none">
+        <br>
+        <p class="lead">Imported <b id="rule-upload-count"></b> YARA rules.</p>
+        <p class="lead"><small>Created <b id="rule-collection-count">0</b> collection(s).</small></p>
+        <hr>
+        <p>You can view these at anytime by navigating <a id="rule-upload-search-link" href="/">here</a>.</p>
+    </div>
+</div>
+<div class="row">
+    <div class="offcanvas offcanvas-start vw-100" tabindex="-1" id="side-panel-popout"
+         aria-labelledby="side-panel-popout-title">
+        <div class="offcanvas-header">
+            <h5 id="side-panel-popout-title"></h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body" id="side-panel-popout-body">
+            ...
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'rule_upload/js/site/upload.js' %}"></script>
+
+<script>
+</script>
+{% endblock %}
