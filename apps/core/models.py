@@ -1,5 +1,12 @@
+import re
 from django.contrib.auth.models import User
 from django.db import models
+
+
+def user_binaries_directory_path(instance, filename):
+    # Upload files to a subdirectory of 'test_binaries' with the user's ID
+    alphanumeric_filename = re.sub(r"[^a-zA-Z0-9.]", "_", filename).lower()
+    return f"test_binaries/{instance.user.id}/{alphanumeric_filename}"
 
 
 class ImportYaraRuleJob(models.Model):
@@ -13,6 +20,20 @@ class ImportYaraRuleJob(models.Model):
 
     def __str__(self):
         return f"ImportYaraRuleJob {self.id} by {self.user.name}"
+
+
+class TestBinary(models.Model):
+    """
+    A model to represent a test binary.
+    """
+
+    id = models.AutoField(primary_key=True)
+    created_time = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    file = models.FileField(upload_to=user_binaries_directory_path)
+
+    def __str__(self):
+        return f"TestBinary {self.id} by {self.user.name}"
 
 
 class YaraRuleCollection(models.Model):

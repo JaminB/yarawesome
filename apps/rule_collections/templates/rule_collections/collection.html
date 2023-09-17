@@ -64,17 +64,6 @@
                                     class="btn btn-secondary" id="clone-collection-btn"><i
                                     class="fa-solid fa-clone"></i></button>
                         {% elif not collection.public and collection.is_owner %}
-                            <button data-bs-toggle="offcanvas"
-                                    data-bs-target="#side-panel-popout"
-                                    aria-controls="offcanvasRight"
-                                    data-collection-id="{{ collection.id }}"
-                                    data-name="{{ collection.name }}"
-                                    data-icon="{{ collection.icon }}"
-                                    data-description="{{ collection.description }}"
-                                    data-rule-count="{{ collection.get_rule_count }}"
-                                    data-is-public="{{ collection.public }}"
-                                    class="btn btn-secondary" id="download-collection-btn"><i
-                                    class="fa-solid fa-download"></i></button>
                             <button class="btn btn-secondary"
                                     id="publish-collection-btn"
                                     data-bs-toggle="offcanvas"

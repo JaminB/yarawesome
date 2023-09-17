@@ -24,6 +24,7 @@ from apps.rule_collections import api as rule_collections_api
 from apps.rule_collections import views as rule_collections_views
 from apps.rule_editor import api as rule_editor_api
 from apps.rule_editor import views as rule_editor_views
+from apps.rule_lab import api as rule_lab_api
 from apps.rule_import import api as rule_import_api
 from apps.rule_import import views as rule_import_views
 
@@ -44,6 +45,11 @@ urlpatterns = [
         "api/collections/<str:collection_id>/publish/",
         rule_collections_api.PublishYaraRuleCollectionResource.as_view(),
         name="api-publish-collection",
+    ),
+    path(
+        "api/lab/import/",
+        rule_lab_api.CreateUploadBinaryResource.as_view(),
+        name="api-create-upload-binary",
     ),
     path(
         "api/rules/import/",

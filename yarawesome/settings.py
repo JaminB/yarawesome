@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "apps.rules",
     "apps.rule_collections",
     "apps.rule_import",
+    "apps.rule_lab",
     "django.contrib.admin",
     "django.contrib.staticfiles",
 ]
