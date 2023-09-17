@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
 from apps.core.models import YaraRule, YaraRuleCollection
-from utils import database, search_index
+from yarawesome.utils import database, search_index
 
 
 def build_rule_index_from_private_collection(

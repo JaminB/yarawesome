@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from utils import database, search_index
+from yarawesome.utils import database, search_index
 from .serializers import RuleLookupSerializer, RuleSearchSerializer
 
 

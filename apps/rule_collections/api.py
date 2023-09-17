@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from utils import database
+from yarawesome.utils import database
 from apps.core.management.commands import publish_collection_index
 from apps.core.models import YaraRule, YaraRuleCollection
 

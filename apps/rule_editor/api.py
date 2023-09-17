@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 
 from apps.core.management.commands import inotify_rule_indexer
 from apps.core.models import YaraRule
-from utils import database, search_index
+from yarawesome.utils import database, search_index
 from apps.rules.serializers import RuleLookupSerializer
 
 

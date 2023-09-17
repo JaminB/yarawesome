@@ -8,4 +8,4 @@ class CoreConfig(AppConfig):
 
     def ready(self):
         super().ready()
-        call_command("inotify_rule_indexer")
+        # call_command("inotify_rule_indexer")

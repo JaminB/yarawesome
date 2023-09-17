@@ -137,3 +137,12 @@ LOGIN_REDIRECT_URL = "/"
 
 #  Uploads
 MEDIA_ROOT = "/tmp/yarawesome/"
+
+
+# Celery
+CELERY_BROKER_URL = "pyamqp://user:password@localhost:5672/"
+CELERY_RESULT_BACKEND = "rpc://"  # Use 'rpc' for RabbitMQ
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"

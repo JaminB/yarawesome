@@ -3,7 +3,7 @@ import shutil
 
 import patoolib
 from rest_framework import serializers
-
+from .tasks import import_yara_rules
 from apps.core.models import ImportYaraRuleJob
 from yarawesome.settings import MEDIA_ROOT
 
@@ -65,12 +65,13 @@ class CreateImportJobSerializer(serializers.Serializer):
         with open(file_path, "wb") as destination_file:
             for chunk in uploaded_file.chunks():
                 destination_file.write(chunk)
-        extract_specific_files(
+        results_directory = extract_specific_files(
             file_path,
             allowed_extensions=[".yara", ".yar"],
             extract_dir=f"{MEDIA_ROOT}/rule-uploads/",
             extracted_file_prefix=import_id,
         )
+        import_yara_rules.delay(results_directory)
         return validated_data
 
     def update(self, instance, validated_data):

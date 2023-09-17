@@ -16,6 +16,7 @@ django-mathfilters = "^1.0.0"
 patool = "^1.12"
 progressbar2 = "^4.2.0"
 celery = {extras = ["rabbitmq"], version = "^5.3.4"}
+django-celery-results = "^2.5.1"
 
 
 [build-system]

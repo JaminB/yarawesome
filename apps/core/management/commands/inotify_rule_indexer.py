@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from utils import search_index
+from yarawesome.utils import search_index
 from yarawesome.settings import MEDIA_ROOT
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "yarawesome.settings")
@@ -57,7 +57,7 @@ def parse_yara_rules_from_raw(yara_rules_string: str) -> typing.List[dict]:
     flattened_rules = []
     try:
         parsed_yara_rules = parser.parse_string(yara_rules_string)
-    except TypeError:
+    except plyara.ParseTypeError:
         return []
     for parsed_yara_rule in parsed_yara_rules:
         rule_start_line = parsed_yara_rule["start_line"]
