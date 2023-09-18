@@ -6,7 +6,7 @@ import plyara
 import requests
 from django.contrib.auth.models import User
 from yarawesome.settings import BASE_DIR
-from apps.core.models import ImportYaraRuleJob, YaraRule, YaraRuleCollection
+from apps.rules.models import ImportYaraRuleJob, YaraRule, YaraRuleCollection
 
 rule_search_index = "yara-rules"
 
@@ -124,7 +124,11 @@ def write_yara_rule_record(parsed_rule: dict, user: typing.Optional[User] = None
     if parsed_rule.get("path_on_disk"):
         import_job_id = int(os.path.basename(parsed_rule["path_on_disk"]).split("_")[0])
         collection_name = os.path.dirname(parsed_rule["path_on_disk"]).split("/")[-1]
-        import_job = ImportYaraRuleJob.objects.get(id=import_job_id)
+        try:
+            import_job = ImportYaraRuleJob.objects.get(id=import_job_id)
+        except ImportYaraRuleJob.DoesNotExist:
+            # This can occur when the import job is deleted.
+            return None
 
         yara_rule_collection = YaraRuleCollection()
         yara_rule_collection.name = collection_name

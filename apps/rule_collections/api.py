@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from yarawesome.utils import database
 from apps.core.management.commands import publish_collection_index
-from apps.core.models import YaraRule, YaraRuleCollection
+from apps.rules.models import YaraRule, YaraRuleCollection
 
 from .serializers import (
     YaraRuleCollectionDeleteRequest,

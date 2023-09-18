@@ -6,7 +6,7 @@ import requests
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 
-from apps.core.models import YaraRule
+from apps.rules.models import YaraRule
 from yarawesome import config
 
 from . import database

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.core.management.commands import inotify_rule_indexer
-from apps.core.models import YaraRule
+from apps.rules.models import YaraRule
 from yarawesome.utils import database, search_index
 from apps.rules.serializers import RuleLookupSerializer
 
@@ -18,7 +18,7 @@ def parse_lookup_rule_response_verbose(yara_rule: YaraRule) -> dict:
     Parse the response from a lookup rule request.
 
     Args:
-        response (requests.Response): The API response.
+        yara_rule (YaraRule): The YaraRule object.
 
     Returns:
         dict: Parsed rule information.

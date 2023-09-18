@@ -31,30 +31,12 @@
 <div class="row justify-content-center">
     <div id="upload-welcome-container" class="text-center">
         <br>
-        <p class="lead"><small>Please upload a binary or archive containing binaries.</small></p>
+        <p class="lead"><small>Please upload a file to scan.</small></p>
         <hr>
-        <p><small>Supported upload formats:
-            <code>.exe</code>,
-            <code>.dll</code>,
-            <code>.so</code>,
-            <code>.bin</code>,
-            <code>.zip</code>,
-            <code>.7z</code>,
-            <code>.rar</code>,
-            and
-            <code>.tar.gz</code>
-            .
-        </small></p>
     </div>
 </div>
 <div class="row justify-content-center">
-    <div id="upload-status-container" class="col-md-12 text-center" style="display:none">
-        <br>
-        <p class="lead">Imported <b id="rule-upload-count"></b> YARA rules.</p>
-        <p class="lead"><small>Created <b id="rule-collection-count">0</b> collection(s).</small></p>
-        <hr>
-        <p>You can view these at anytime by navigating <a id="rule-upload-search-link" href="/">here</a>.</p>
-    </div>
+
 </div>
 <div class="row">
     <div class="offcanvas offcanvas-start vw-100" tabindex="-1" id="side-panel-popout"
@@ -70,7 +52,7 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="{% static 'rule_upload/js/site/upload.js' %}"></script>
+<script src="{% static 'rule_lab/js/site/upload.js' %}"></script>
 
 <script>
 </script>

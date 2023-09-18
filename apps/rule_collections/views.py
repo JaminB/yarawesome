@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
 from django.db.models import Q
 
-from apps.core.models import YaraRuleCollection
+from apps.rules.models import YaraRuleCollection
 
 
 @login_required

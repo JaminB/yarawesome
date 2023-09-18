@@ -1,0 +1,46 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block styles %}
+
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <br>
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-responsive-lg info-table">
+                    <thead>
+                       <tr>
+                           <th></th>
+                           <th>File Name</th>
+                           <th>File Size</th>
+                           <th>Local Rule Matches</th>
+                           <th>Global Rule Matches</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in files %}
+                        <tr>
+                            <td>
+                            </td>
+                            <td>{{ file.file_name }}</td>
+                            <td>{{ file.file_size }}</td>
+                            <td>{{ file.local_rule_matches }}</td>
+                            <td>{{ file.global_rule_matches }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'rule_import/js/site/import.js' %}"></script>
+
+<script>
+</script>
+{% endblock %}

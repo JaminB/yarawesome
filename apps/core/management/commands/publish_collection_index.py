@@ -3,7 +3,7 @@ import plyara.exceptions
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
-from apps.core.models import YaraRule, YaraRuleCollection
+from apps.rules.models import YaraRule, YaraRuleCollection
 from yarawesome.utils import database, search_index
 
 

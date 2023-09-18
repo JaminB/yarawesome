@@ -25,6 +25,7 @@ from apps.rule_collections import views as rule_collections_views
 from apps.rule_editor import api as rule_editor_api
 from apps.rule_editor import views as rule_editor_views
 from apps.rule_lab import api as rule_lab_api
+from apps.rule_lab import views as rule_lab_views
 from apps.rule_import import api as rule_import_api
 from apps.rule_import import views as rule_import_views
 
@@ -47,7 +48,7 @@ urlpatterns = [
         name="api-publish-collection",
     ),
     path(
-        "api/lab/import/",
+        "api/lab/upload/",
         rule_lab_api.CreateUploadBinaryResource.as_view(),
         name="api-create-upload-binary",
     ),
@@ -83,6 +84,7 @@ urlpatterns = [
     ),
     path("editor/", rule_editor_views.editor, name="editor"),
     path("import/", rule_import_views.import_rule, name="import"),
+    path("lab/upload/", rule_lab_views.upload_test_binary, name="lab"),
     path("rules/<str:rule_id>/editor/", rule_editor_views.editor, name="editor-open"),
     path("rules/", rule_browser_views.shared_rules, name="shared-rules-search"),
     path(

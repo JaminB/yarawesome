@@ -4,7 +4,7 @@ import shutil
 import patoolib
 from rest_framework import serializers
 from .tasks import import_yara_rules
-from apps.core.models import ImportYaraRuleJob
+from apps.rules.models import ImportYaraRuleJob
 from yarawesome.settings import MEDIA_ROOT
 
 
