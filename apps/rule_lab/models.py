@@ -1,4 +1,5 @@
 import re
+import hashlib
 from django.db import models
 from django.contrib.auth.models import User
 from apps.rules.models import YaraRule
@@ -8,8 +9,8 @@ def user_binaries_directory_path(instance, filename):
     """
     Return the path to a user's test binary.
     """
-    alphanumeric_filename = re.sub(r"[^a-zA-Z0-9.]", "_", filename).lower()
-    return f"test_binaries/{instance.user.id}/{alphanumeric_filename}"
+    partial_hash = hashlib.md5(instance.file.read(4096)).hexdigest()
+    return f"test_binaries/{instance.user.id}/{partial_hash}"
 
 
 class TestBinary(models.Model):
@@ -18,6 +19,7 @@ class TestBinary(models.Model):
     """
 
     id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)
     created_time = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     file = models.FileField(upload_to=user_binaries_directory_path)

@@ -1,3 +1,4 @@
+import re
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
 from rest_framework.parsers import MultiPartParser
@@ -15,10 +16,14 @@ class CreateUploadBinaryResource(CreateAPIView):
     parser_classes = [MultiPartParser]
 
     def create(self, request, *args, **kwargs):
+        alphanumeric_filename = re.sub(
+            r"[^a-zA-Z0-9.]", "_", request.data["file"].name
+        ).lower()
         serializer = self.get_serializer(data=request.data)
         user = serializer.context["request"].user
+
         if serializer.is_valid():
-            serializer.save(user=user)
+            serializer.save(user=user, name=alphanumeric_filename)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

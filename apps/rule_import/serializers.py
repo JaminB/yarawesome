@@ -71,7 +71,7 @@ class CreateImportJobSerializer(serializers.Serializer):
             extract_dir=f"{MEDIA_ROOT}/rule-uploads/",
             extracted_file_prefix=import_id,
         )
-        import_yara_rules.delay(results_directory)
+        import_yara_rules.delay(results_directory, import_id=import_id)
         return validated_data
 
     def update(self, instance, validated_data):

@@ -39,6 +39,31 @@ def get_yara_rule_collection_content(user: User, collection_id: int) -> str:
     return import_string + rules_string
 
 
+def get_yara_rules_content(
+    user: typing.Optional[User] = None, rule_ids: typing.List[int] = ()
+) -> str:
+    """
+    Download a YARA rule collection.
+    """
+    rules_string = ""
+    imports = []
+    if user:
+        for rule in YaraRule.objects.filter(id__in=rule_ids, user=user).all():
+            rules_string += "\n\n" + rule.content
+            imports.extend(
+                plyara.Plyara().parse_string(rule.content)[0].get("imports", [])
+            )
+    else:
+        for rule in YaraRule.objects.filter(id__in=rule_ids, public=True).all():
+            rules_string += "\n\n" + rule.content
+            imports.extend(
+                plyara.Plyara().parse_string(rule.content)[0].get("imports", [])
+            )
+    imports = set(imports)
+    import_string = "\n".join([f'import "{import_}"' for import_ in imports])
+    return import_string + rules_string
+
+
 def get_icon_id_from_string(string: str):
     """
     Get an icon ID from a string.
@@ -111,21 +136,25 @@ def parse_lookup_rule_response(yara_rule: YaraRule) -> dict:
         return {"yara_rule": None}
 
 
-def write_yara_rule_record(parsed_rule: dict, user: typing.Optional[User] = None):
+def write_yara_rule_record(
+    parsed_rule: dict,
+    user: typing.Optional[User] = None,
+    collection_name: typing.Optional[str] = None,
+    import_id: typing.Optional[int] = None,
+) -> typing.Optional[YaraRule]:
     """
-    Write a parsed YARA rule to the database. If the rule already exists, do nothing.
+    Write a parsed YARA rule to the database. If the rule already exists, update its contents if necessary.
     Args:
         user: The user writing the rule to the database.
         parsed_rule: A dictionary containing parsed YARA rule information.
+        collection_name: The name of the collection to write the rule to.
+        import_id: The ID of the import job.
 
     Returns: A YaraRule instance.
     """
-
-    if parsed_rule.get("path_on_disk"):
-        import_job_id = int(os.path.basename(parsed_rule["path_on_disk"]).split("_")[0])
-        collection_name = os.path.dirname(parsed_rule["path_on_disk"]).split("/")[-1]
+    if import_id:
         try:
-            import_job = ImportYaraRuleJob.objects.get(id=import_job_id)
+            import_job = ImportYaraRuleJob.objects.get(id=import_id)
         except ImportYaraRuleJob.DoesNotExist:
             # This can occur when the import job is deleted.
             return None
@@ -136,7 +165,7 @@ def write_yara_rule_record(parsed_rule: dict, user: typing.Optional[User] = None
             f"Generated from {yara_rule_collection.name}."
         )
         if not YaraRuleCollection.objects.filter(
-            import_job=import_job_id, name=collection_name
+            import_job=import_job, name=collection_name
         ).exists():
             yara_rule_collection.user = import_job.user
             yara_rule_collection.import_job = import_job
@@ -148,7 +177,7 @@ def write_yara_rule_record(parsed_rule: dict, user: typing.Optional[User] = None
         else:
             yara_rule_collection = (
                 YaraRuleCollection.objects.filter(
-                    import_job__id=import_job_id, name=collection_name
+                    import_job__id=import_id, name=collection_name
                 )
                 .all()
                 .latest("id")

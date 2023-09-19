@@ -272,13 +272,20 @@ def search_yara_rules_index(
         return response
 
 
-def index_yara_rule(parsed_rule: dict, user: typing.Optional[User] = None):
+def index_yara_rule(
+    parsed_rule: dict,
+    user: typing.Optional[User] = None,
+    collection_name: typing.Optional[str] = None,
+    import_id: typing.Optional[int] = None,
+) -> typing.Optional[requests.Response]:
     """
     Index a parsed YARA rule into the search backend.
 
     Args:
         user: The user making the search request.
         parsed_rule (dict): A dictionary containing parsed YARA rule information.
+        collection_name (str): The name of the collection to index the rule into.
+        import_id (int): The ID of the import job.
 
     Returns:
         requests.Response: The response from the indexing request.
@@ -293,7 +300,9 @@ def index_yara_rule(parsed_rule: dict, user: typing.Optional[User] = None):
         parsed_rule["content"] = _import_str + "\n" + parsed_rule["content"]
     headers = {"Content-Type": "application/json"}
     try:
-        yara_rule_db = database.write_yara_rule_record(parsed_rule, user=user)
+        yara_rule_db = database.write_yara_rule_record(
+            parsed_rule, user=user, collection_name=collection_name, import_id=import_id
+        )
     except IntegrityError:
         return None
 
