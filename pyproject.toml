@@ -17,7 +17,7 @@ patool = "^1.12"
 progressbar2 = "^4.2.0"
 celery = {extras = ["rabbitmq"], version = "^5.3.4"}
 django-celery-results = "^2.5.1"
-yara-python = "^4.3.1"
+yara-python = {"git" = "https://github.com/VirusTotal/yara-python.git"}
 
 
 [build-system]

@@ -55,10 +55,8 @@ def parse_yara_rules_from_raw(yara_rules_string: str) -> typing.List[dict]:
     """
     parser = plyara.Plyara()
     flattened_rules = []
-    try:
-        parsed_yara_rules = parser.parse_string(yara_rules_string)
-    except plyara.ParseTypeError:
-        return []
+    parsed_yara_rules = parser.parse_string(yara_rules_string)
+
     for parsed_yara_rule in parsed_yara_rules:
         rule_start_line = parsed_yara_rule["start_line"]
         rule_end_line = parsed_yara_rule["stop_line"]

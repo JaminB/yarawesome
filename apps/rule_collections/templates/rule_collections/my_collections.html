@@ -39,9 +39,16 @@
                         <tbody>
                         {% for collection in collections %}
                             <tr>
-                                <td><a class="btn btn-sm btn-dark" href="#"><i
-                                        class="fa-solid fa-pen" data-bs-toggle="offcanvas"
-                                        data-bs-target="#side-panel-popout" aria-controls="offcanvasRight"></i></a></td>
+                                <td>
+                                    <button class="btn btn-sm btn-dark edit-collection-btn"><i
+                                            class="fa-solid fa-pen" data-bs-toggle="offcanvas"
+                                            data-bs-target="#side-panel-popout" aria-controls="offcanvasRight"
+                                            data-name="{{ collection.name }}"
+                                            data-collection-id="{{ collection.id }}"
+                                            data-icon="{{ collection.icon }}"
+                                            data-description="{{ collection.description }}"></i>
+                                    </button>
+                                </td>
                                 {% if collection.public %}
                                     <td>
                                         <button disabled class="btn btn-sm btn-dark publish-collection-button"
@@ -71,7 +78,8 @@
                                         class="collection-icon"
                                         src="/static/core/img/icons/collections/{{ collection.icon }}.png"></a></td>
                                 <td><span class="badge bg-danger badge-large">{{ collection.created_time }}</span></td>
-                                <td id="collection-name"><a href="/collections/{{ collection.id }}">{{ collection.name }}</a></td>
+                                <td id="collection-name"><a
+                                        href="/collections/{{ collection.id }}">{{ collection.name }}</a></td>
                                 </td>
                                 <td>{{ collection.description }}</td>
                                 <td>

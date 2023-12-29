@@ -385,7 +385,7 @@ function initializeCollectionSidePanel() {
             window.location.href = '/collections/mine';
         });
     });
-    $("#edit-collection-btn").click(function () {
+    $(".edit-collection-btn").click(function () {
         openEditCollectionSidePanel(function () {
             window.location.href = '/collections/mine';
         })

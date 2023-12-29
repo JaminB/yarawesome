@@ -53,6 +53,11 @@ urlpatterns = [
         name="api-create-upload-binary",
     ),
     path(
+        "api/lab/binaries/<str:binary_id>/scan/",
+        rule_lab_api.ScanUploadBinaryResource.as_view(),
+        name="api-scan-upload-binary",
+    ),
+    path(
         "api/rules/import/",
         rule_import_api.CreateImportJobResource.as_view(),
         name="api-create-import-job",

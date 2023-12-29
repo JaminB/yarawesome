@@ -78,7 +78,8 @@ class RuleEditorResource(APIView):
             )[0]
         except ParseError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        except IndexError:
+        except IndexError as e:
+
             return Response(
                 {"error": "No rule detected, perhaps missing closing bracket?"},
                 status=status.HTTP_400_BAD_REQUEST,

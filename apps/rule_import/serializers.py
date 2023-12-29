@@ -60,7 +60,7 @@ class CreateImportJobSerializer(serializers.Serializer):
     def create(self, validated_data):
         import_id = validated_data.pop("import_id")
         uploaded_file = validated_data["file"]
-
+        os.makedirs(f"{MEDIA_ROOT}/rule-uploads/", exist_ok=True)
         file_path = f"{MEDIA_ROOT}/uploads/{uploaded_file.name}"
         with open(file_path, "wb") as destination_file:
             for chunk in uploaded_file.chunks():
