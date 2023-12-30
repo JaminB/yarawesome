@@ -34,17 +34,27 @@ urlpatterns = [
     path("user/", include("django.contrib.auth.urls")),
     path(
         "api/collections/<str:collection_id>/",
-        rule_collections_api.YaraRuleCollectionResource.as_view(),
+        rule_collections_api.RuleCollectionResource.as_view(),
         name="api-collection",
     ),
     path(
-        "api/collections/<str:collection_id>/raw/",
-        rule_collections_api.YaraRuleCollectionDownloadResource.as_view(),
-        name="api-collection-raw",
+        "api/collections/<str:collection_id>/download/",
+        rule_collections_api.RuleCollectionDownloadTaskResource.as_view(),
+        name="api-download-collection-task",
+    ),
+    path(
+        "api/collections/<str:collection_id>/download/<str:download_id>/",
+        rule_collections_api.RuleCollectionDownloadTaskResource.as_view(),
+        name="api-download-collection",
+    ),
+    path(
+        "api/collections/<str:collection_id>/clone/",
+        rule_collections_api.RuleCollectionCloneResource.as_view(),
+        name="api-clone-collection",
     ),
     path(
         "api/collections/<str:collection_id>/publish/",
-        rule_collections_api.PublishYaraRuleCollectionResource.as_view(),
+        rule_collections_api.PersonalRuleCollectionPublishResource.as_view(),
         name="api-publish-collection",
     ),
     path(

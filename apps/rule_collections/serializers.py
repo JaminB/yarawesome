@@ -1,6 +1,10 @@
 from rest_framework import serializers
 
 
+class YaraRuleCollectionCloneRequest(serializers.Serializer):
+    collection_id = serializers.IntegerField(min_value=1)
+
+
 class YaraRuleCollectionDeleteRequest(serializers.Serializer):
     collection_id = serializers.IntegerField(min_value=1)
 

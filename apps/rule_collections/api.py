@@ -1,47 +1,128 @@
 import json
+from hashlib import sha256
+from datetime import datetime
 from django.http import HttpResponse
+from django.forms.models import model_to_dict
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from yarawesome.utils import database
-from apps.core.management.commands import publish_collection_index
-from apps.rules.models import YaraRule, YaraRuleCollection
-
+from apps.rule_collections.models import YaraRuleCollection, YaraRuleCollectionDownload
+from apps.rule_import.models import ImportYaraRuleJob
+from .tasks import clone_collection, download_collection, publish_collection
 from .serializers import (
     YaraRuleCollectionDeleteRequest,
     YaraRuleCollectionPublishRequest,
     YaraRuleCollectionUpdateRequest,
+    YaraRuleCollectionCloneRequest,
 )
 
 
-class YaraRuleCollectionDownloadResource(APIView):
+class RuleCollectionCloneResource(APIView):
     """
-    A view to download a YARA rule collection.
+    A view to clone a YARA rule collection into a personal collection.
+    """
+
+    def put(self, request, *args, **kwargs):
+        YaraRuleCollectionCloneRequest(data=kwargs).is_valid(raise_exception=True)
+        copy_from_collection_id = kwargs["collection_id"]
+        copy_from_collection = YaraRuleCollection.objects.get(
+            id=copy_from_collection_id
+        )
+        new_import_job = ImportYaraRuleJob(user=request.user)
+        new_import_job.save()
+
+        new_collection = YaraRuleCollection.objects.create(
+            user=request.user,
+            name=copy_from_collection.name,
+            description=copy_from_collection.description,
+            import_job=new_import_job,
+        )
+        new_collection.save()
+
+        # Fork to celery worker
+        clone_collection.delay(
+            model_to_dict(copy_from_collection),
+            model_to_dict(new_collection),
+            {"id": request.user.id},
+        )
+        return Response(
+            status=status.HTTP_201_CREATED,
+            data={
+                "collection": {
+                    "id": new_collection.id,
+                    "name": new_collection.name,
+                    "description": new_collection.description,
+                    "icon": new_collection.icon,
+                },
+                "import_job": new_import_job.id,
+                "message": "Starting process of cloning collection. This may take some time to complete.",
+            },
+        )
+
+
+class RuleCollectionDownloadTaskResource(APIView):
+    """
+    A view to create download task from YARA rule collection.
     """
 
     def get(self, request, *args, **kwargs):
-        """
-        Download a YARA rule collection.
-        """
         collection_id = kwargs["collection_id"]
-        concat_rules = database.get_yara_rule_collection_content(
-            request.user, collection_id
-        )
-        if concat_rules:
-            collection_name = YaraRuleCollection.objects.get(id=collection_id).name
-            response = HttpResponse(
-                concat_rules,
-                content_type="application/x-yara",
+        download_id = kwargs["download_id"]
+        download = request.query_params.get("download")
+
+        if not download:
+            try:
+                YaraRuleCollectionDownload.objects.get(
+                    id=download_id, collection_id=collection_id
+                )
+                return Response(
+                    status=status.HTTP_200_OK,
+                    data={
+                        "download_url": f"/api/collections/{collection_id}/download/{download_id}/?download=true"
+                    },
+                )
+            except YaraRuleCollectionDownload.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+        else:
+            collection_download = YaraRuleCollectionDownload.objects.get(
+                id=download_id, collection_id=collection_id
             )
-            response[
-                "Content-Disposition"
-            ] = f'attachment; filename="{collection_name}.yara"'
-            return response
 
-        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+            if collection_download:
+                collection_name = YaraRuleCollection.objects.get(id=collection_id).name
+                response = HttpResponse(
+                    collection_download.content,
+                    content_type="application/x-yara",
+                )
+                response[
+                    "Content-Disposition"
+                ] = f'attachment; filename="{collection_name}.yara"'
+                return response
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Create a YARA rule collection download job.
+        """
+        download_id = sha256(str(datetime.now()).encode()).hexdigest()
+        collection_id = kwargs["collection_id"]
+        download_collection.delay(
+            collection_id=collection_id,
+            download_id=download_id,
+        )
+        return Response(
+            status=status.HTTP_201_CREATED,
+            data={
+                "download_id": download_id,
+                "collection_id": collection_id,
+                "message": "Starting process of creating downloadable collection. "
+                "This may take some time to complete.",
+            },
+        )
 
 
-class YaraRuleCollectionResource(APIView):
+class RuleCollectionResource(APIView):
     """
     A view to view a YARA rule collection.
     """
@@ -104,7 +185,7 @@ class YaraRuleCollectionResource(APIView):
         return Response(status=status.HTTP_200_OK, data={"deleted": True})
 
 
-class PublishYaraRuleCollectionResource(APIView):
+class PersonalRuleCollectionPublishResource(APIView):
     """
     A view to publish a YARA rule collection, and all of its rules to the public.
     """
@@ -117,9 +198,11 @@ class PublishYaraRuleCollectionResource(APIView):
         serializer = YaraRuleCollectionPublishRequest(data=kwargs)
         serializer.is_valid(raise_exception=True)
         collection_id = serializer.validated_data["collection_id"]
+
         yara_rule_collection = YaraRuleCollection.objects.filter(
             id=collection_id, user=request.user
         ).first()
+
         request_body = request.body.decode("utf-8")
         if request_body:
             try:
@@ -128,23 +211,20 @@ class PublishYaraRuleCollectionResource(APIView):
                 return Response({"error": "Invalid JSON data"}, status=400)
             if not data.get("public"):
                 set_to_public = False
+        publish_collection.delay(
+            collection=model_to_dict(yara_rule_collection),
+            user={"id": request.user.id},
+            set_to_public=set_to_public,
+        )
         yara_rule_collection.public = set_to_public
-        if not publish_collection_index.build_rule_index_from_private_collection(
-            yara_rule_collection, request.user
-        ):
-            return Response(
-                {"error": "Could not build the rule index."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
         yara_rule_collection.save()
-        yara_rules = YaraRule.objects.filter(collection=yara_rule_collection)
 
-        for yara_rule in yara_rules:
-            yara_rule.public = set_to_public
-            yara_rule.save()
         return Response(
-            data={"published": yara_rule_collection.public},
-            status=status.HTTP_200_OK,
+            data={
+                "published": yara_rule_collection.public,
+                "message": "Starting process of publishing collection. This may take some time to complete.",
+            },
+            status=status.HTTP_201_CREATED,
         )
 
     def get(self, request, *args, **kwargs):

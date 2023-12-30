@@ -1,3 +1,6 @@
+let downloadTaskCompleted = false;
+
+
 function download(filename, text) {
     let elem = document.createElement('a');
     elem.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
@@ -21,7 +24,6 @@ function download(filename, text) {
 function deleteCollection(elem, onSuccess, onFailure) {
     let sourceElement = $(elem);
     let collectionId = $(sourceElement).data("collectionId");
-    console.log(sourceElement);
     $(sourceElement).prop("disabled", true);
     toastr.warning("Deleting collection...");
     $.ajax({
@@ -40,18 +42,95 @@ function deleteCollection(elem, onSuccess, onFailure) {
             if (onFailure !== undefined) {
                 onFailure(response);
             } else {
-                toastr.error("Failed to delete collection.");
+                toastr.error("Failed to delete collection. This can occur if the collection is actively being cloned. Come back later.");
             }
         }
     });
 }
 
 
-function downloadCollection(elem, onSuccess, onFailure) {
+function cloneCollection(elem, onSuccess, onFailure) {
+
+    let sourceElement = $(elem);
+    let collectionId = $(sourceElement).data("collectionId");
+    let collectionName = $(sourceElement).data("name");
+
+    $.ajax({
+        url: `/api/collections/${collectionId}/clone/`,
+        type: 'PUT',
+        headers: {"X-CSRFToken": getCookie("csrftoken")},
+        contentType: "application/json; charset=utf-8",
+        success: function (response) {
+            if (onSuccess !== undefined) {
+                onSuccess(response);
+            } else {
+                toastr.success(`Cloning <b><a href="/collections/${response["collection"]["id"]}" target="_blank">${collectionName}</a></b> to your personal <a href="/collections/mine">collections.</a> 
+                <br>
+                <br>
+                This process will continue in the background.`, {timeOut: 15000});
+            }
+        },
+        error: function (response) {
+            if (onFailure !== undefined) {
+                onFailure(response);
+            } else {
+                toastr.error("Failed to clone collection.");
+            }
+        }
+    });
+}
+
+
+function checkDownloadCollectionTask(collectionId, downloadId) {
+    if (downloadTaskCompleted) {
+        return
+    }
+    $.ajax(
+        {
+            "url": `/api/collections/${collectionId}/download/${downloadId}/`,
+            type: 'GET',
+            headers: {"X-CSRFToken": getCookie("csrftoken")},
+            contentType: "application/json; charset=utf-8",
+            success: function (response) {
+                window.location.href = response["download_url"];
+                downloadTaskCompleted = true;
+                $("#side-panel-popout").offcanvas('hide');
+            },
+            error: function (response) {
+                console.log("Does not yet exist.")
+            }
+        });
+}
+
+function createDownloadCollectionTask(elem, onSuccess, onFailure) {
     // Get the source element and collection ID from the event target.
     let sourceElement = $(elem);
     let collectionId = $(sourceElement).data("collectionId");
-    window.location="/api/collections/" + collectionId + "/raw/";
+    downloadTaskCompleted = false;
+    $("#download-task-loader").fadeIn();
+    $("#submit-download-collection-btn").prop("disabled", true);
+    $.ajax(
+        {
+            "url": `/api/collections/${collectionId}/download/`,
+            type: 'POST',
+            headers: {"X-CSRFToken": getCookie("csrftoken")},
+            contentType: "application/json; charset=utf-8",
+            success: function (response) {
+                if (onSuccess !== undefined) {
+                    onSuccess(response);
+                }
+                setInterval(function () {
+                    checkDownloadCollectionTask(collectionId, response["download_id"]);
+                }, 5000);
+            },
+            error: function (response) {
+                if (onFailure !== undefined) {
+                    onFailure(response);
+                } else {
+                    toastr.error("Failed to create download task for collection.");
+                }
+            }
+        });
 }
 
 function editCollection(elem, onSuccess, onFailure) {
@@ -130,6 +209,52 @@ function publishCollection(elem, onSuccess, onFailure) {
             }
         }
     });
+}
+
+/**
+ * Opens the clone collection side panel.
+ */
+function openCloneCollectionSidePanel() {
+    // Set the collection ID in the side panel
+    let sourceElement = event.delegateTarget;
+    let collectionId = $(sourceElement).data("collectionId");
+    let collectionName = $(sourceElement).data("name");
+    $("#side-panel-popout-title").text(`Clone Collection`);
+    $("#side-panel-popout-body").html(`
+        <p class="lead">Are you sure you want to clone this collection?</p>
+        <hr>
+        <p>Cloning means that all ${$(sourceElement).data("rule-count")} rule(s) in this collection will be stored in your personal collections.
+        This will enable you to make changes to this collection.
+        </p>
+        <br>
+        <table class="table table-responsive">
+            <tbody>
+                <tr>
+                    <th>Name</th>
+                    <td><code>${$(sourceElement).data("name")}</code></td>
+                </tr>
+                <tr>
+                    <th>Description</th>
+                    <td>${$(sourceElement).data("description")}</td>
+                </tr>
+                <tr>
+                    <th>Rule Count</th>
+                    <th>${$(sourceElement).data("rule-count")}</th>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <div class="align-center">
+            <button id="submit-clone-collection-btn" class="btn btn-success btn-lg float-end" data-collection-id="${collectionId}" data-name="${collectionName}">
+            <i class="fa-solid fa-clone"></i> Clone</button>
+        </div>
+        <script>
+            $("#submit-clone-collection-btn").click(function(){
+                cloneCollection(this, undefined, undefined);
+                $("#side-panel-popout").offcanvas('hide');
+            });
+        </script>
+    `);
 }
 
 /**
@@ -299,13 +424,19 @@ function openDownloadCollectionSidePanel(elem, onSuccess, onFailure) {
             </tbody>
         </table>
         <br>
+        <div style="display: flex; justify-content: center; align-items: center;">
+            <p style="display: none" class="lead" id="download-task-loader" >
+               <img src="/static/core/img/loader.svg" class="loader"/> Creating download task. This may take a few minutes depending on the number of rules in this collection. Please wait.
+            </p>
+            
+        </div>
         <div class="align-center">
-            <a download id="submit-download-collection-btn" href="/api/collections/${collectionId}/raw/"  class="btn btn-danger btn-lg float-end" data-collection-id="${collectionId}">
-            <i class="fa-solid fa-download" ></i> Download</a>
+            <button id="submit-download-collection-btn" href="/api/collections/${collectionId}/raw/"  class="btn btn-danger btn-lg float-end" data-collection-id="${collectionId}">
+            <i class="fa-solid fa-download" ></i> Download</button>
         </div>
         <script>
                 $("#submit-download-collection-btn").on("click", function(){
-                    toastr.info("Downloading collection, it may take a few seconds to start.");
+                    createDownloadCollectionTask(this, undefined, undefined);
                 });
         </script>
     `);
@@ -390,6 +521,9 @@ function initializeCollectionSidePanel() {
             window.location.href = '/collections/mine';
         })
     });
+    $(".clone-collection-btn").click(function () {
+        openCloneCollectionSidePanel(this);
+    });
     $("#download-collection-btn").click(function () {
         openDownloadCollectionSidePanel(this, undefined, undefined);
     })
@@ -412,10 +546,3 @@ $(document).ready(function () {
     initializeModals();
 });
 
-
-/**
- * Edits a collection using an AJAX PUT request.
- *
- * @param {Function} onSuccess - A callback function to execute on a successful edit.
- * @param {Function} onFailure - A callback function to execute on a failed edit.
- */

@@ -1,5 +1,6 @@
 // Define the CodeMirror editor
 let editor;
+let defaultLinesToShow = 50;
 
 // Initialize the CodeMirror editor and set up its configuration
 function initializeEditor() {
@@ -28,7 +29,7 @@ function initializeEditor() {
 function loadYaraRuleContent() {
     const matches = window.location.href.match(/\/rules\/([^\/]+)/);
     if (!matches) {
-        editor.setValue("\n".repeat(25));
+        editor.setValue("\n".repeat(defaultLinesToShow));
         return;
     }
 
@@ -36,10 +37,15 @@ function loadYaraRuleContent() {
         url: `/api/rules/${matches[1]}`,
         method: "GET",
         success: function(response) {
-            editor.setValue(response["yara_rule"]["rule"]);
+            let lineCount = response["yara_rule"]["rule"].split("\n").length;
+            let blankLines = "";
+            if (lineCount < defaultLinesToShow) {
+                blankLines = "\n".repeat(defaultLinesToShow - lineCount);
+            }
+            editor.setValue(response["yara_rule"]["rule"] + blankLines);
         },
         error: function(xhr, status, error) {
-            editor.setValue("\n".repeat(25));
+            editor.setValue("\n".repeat(defaultLinesToShow));
             console.error("API error:", error);
         }
     });

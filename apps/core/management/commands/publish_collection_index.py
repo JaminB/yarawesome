@@ -1,3 +1,5 @@
+from typing import Union
+
 import plyara
 import plyara.exceptions
 from django.contrib.auth.models import User
@@ -8,7 +10,7 @@ from yarawesome.utils import database, search_index
 
 
 def build_rule_index_from_private_collection(
-    collection: YaraRuleCollection, user: User
+    collection: Union[YaraRuleCollection, dict], user: [User, dict]
 ):
     """
     Build the rule index from a private collection.
@@ -18,9 +20,17 @@ def build_rule_index_from_private_collection(
 
     Returns:
     """
-    if user != collection.user:
-        return None
-    yara_rules = YaraRule.objects.filter(collection=collection, user=user).all()
+
+    if isinstance(collection, YaraRuleCollection) and isinstance(user, User):
+        if user != collection.user:
+            return None
+        yara_rules = YaraRule.objects.filter(collection=collection, user=user).all()
+    else:
+        if user.get("id") != collection.get("user_id"):
+            return None
+        yara_rules = YaraRule.objects.filter(
+            collection__id=collection.get("id"), user_id=user.get("id")
+        ).all()
     rule_chunk = []
     upload_results = []
     for rule in yara_rules.iterator():

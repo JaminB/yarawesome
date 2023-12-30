@@ -25,3 +25,14 @@ class YaraRuleCollection(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class YaraRuleCollectionDownload(models.Model):
+    """
+    A model to represent a collection of YARA rules.
+    """
+
+    id = models.TextField(primary_key=True)
+    created_time = models.DateTimeField(auto_now_add=True)
+    content = models.TextField()
+    collection = models.ForeignKey(YaraRuleCollection, on_delete=models.CASCADE)
