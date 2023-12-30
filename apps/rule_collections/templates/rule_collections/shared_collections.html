@@ -49,10 +49,19 @@
                                                 data-description="{{ collection.description }}"></i>
                                         </button>
                                     {% else %}
-                                        <a class="btn btn-sm btn-dark" href="#"><i
-                                                class="fa-solid fa-clone" data-bs-toggle="offcanvas"
-                                                data-bs-target="#side-panel-popout" aria-controls="offcanvasRight"></i>
-                                        </a>
+                                               <button
+                                    data-bs-toggle="offcanvas"
+                                    data-bs-target="#side-panel-popout"
+                                    aria-controls="offcanvasRight"
+                                    data-collection-id="{{ collection.id }}"
+                                    data-name="{{ collection.name }}"
+                                    data-icon="{{ collection.icon }}"
+                                    data-description="{{ collection.description }}"
+                                    data-rule-count="{{ collection.get_rule_count }}"
+                                    data-is-public="{{ collection.public }}"
+                                    class="btn btn-sm btn-dark clone-collection-btn"
+                            ><i
+                                    class="fa-solid fa-clone"></i></button>
                                     {% endif %}
                                 </td>
                                 <td><a href="/collections/{{ collection.id }}"><img

@@ -1,17 +1,62 @@
 import json
 from django.http import HttpResponse
+from django.forms.models import model_to_dict
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from yarawesome.utils import database
-from apps.core.management.commands import publish_collection_index
 from apps.rules.models import YaraRule, YaraRuleCollection
-
+from apps.rule_import.models import ImportYaraRuleJob
+from .tasks import clone_collection, publish_collection
 from .serializers import (
     YaraRuleCollectionDeleteRequest,
     YaraRuleCollectionPublishRequest,
     YaraRuleCollectionUpdateRequest,
+    YaraRuleCollectionCloneRequest,
 )
+
+
+class YaraRuleCollectionCloneResource(APIView):
+    """
+    A view to clone a YARA rule collection into a personal collection.
+    """
+
+    def put(self, request, *args, **kwargs):
+        YaraRuleCollectionCloneRequest(data=kwargs).is_valid(raise_exception=True)
+        copy_from_collection_id = kwargs["collection_id"]
+        copy_from_collection = YaraRuleCollection.objects.get(
+            id=copy_from_collection_id
+        )
+        new_import_job = ImportYaraRuleJob(user=request.user)
+        new_import_job.save()
+
+        new_collection = YaraRuleCollection.objects.create(
+            user=request.user,
+            name=copy_from_collection.name,
+            description=copy_from_collection.description,
+            import_job=new_import_job,
+        )
+        new_collection.save()
+
+        # Fork to celery worker
+        clone_collection.delay(
+            model_to_dict(copy_from_collection),
+            model_to_dict(new_collection),
+            {"id": request.user.id},
+        )
+        return Response(
+            status=status.HTTP_201_CREATED,
+            data={
+                "collection": {
+                    "id": new_collection.id,
+                    "name": new_collection.name,
+                    "description": new_collection.description,
+                    "icon": new_collection.icon,
+                },
+                "import_job": new_import_job.id,
+                "message": "Starting process of cloning collection. This may take some time to complete.",
+            },
+        )
 
 
 class YaraRuleCollectionDownloadResource(APIView):
@@ -117,9 +162,11 @@ class PublishYaraRuleCollectionResource(APIView):
         serializer = YaraRuleCollectionPublishRequest(data=kwargs)
         serializer.is_valid(raise_exception=True)
         collection_id = serializer.validated_data["collection_id"]
+
         yara_rule_collection = YaraRuleCollection.objects.filter(
             id=collection_id, user=request.user
         ).first()
+
         request_body = request.body.decode("utf-8")
         if request_body:
             try:
@@ -128,23 +175,20 @@ class PublishYaraRuleCollectionResource(APIView):
                 return Response({"error": "Invalid JSON data"}, status=400)
             if not data.get("public"):
                 set_to_public = False
+        publish_collection.delay(
+            collection=model_to_dict(yara_rule_collection),
+            user={"id": request.user.id},
+            set_to_public=set_to_public,
+        )
         yara_rule_collection.public = set_to_public
-        if not publish_collection_index.build_rule_index_from_private_collection(
-            yara_rule_collection, request.user
-        ):
-            return Response(
-                {"error": "Could not build the rule index."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
         yara_rule_collection.save()
-        yara_rules = YaraRule.objects.filter(collection=yara_rule_collection)
 
-        for yara_rule in yara_rules:
-            yara_rule.public = set_to_public
-            yara_rule.save()
         return Response(
-            data={"published": yara_rule_collection.public},
-            status=status.HTTP_200_OK,
+            data={
+                "published": yara_rule_collection.public,
+                "message": "Starting process of publishing collection. This may take some time to complete.",
+            },
+            status=status.HTTP_201_CREATED,
         )
 
     def get(self, request, *args, **kwargs):

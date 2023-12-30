@@ -14,6 +14,11 @@ from . import database
 rule_search_index = "yara-rules"
 
 
+class DummyUser:
+    def __init__(self, _id: int):
+        self.id = _id
+
+
 def bulk_index_yara_rules(
     yara_rules: typing.List[dict],
     chunk_size: int = 200,
@@ -274,7 +279,7 @@ def search_yara_rules_index(
 
 def index_yara_rule(
     parsed_rule: dict,
-    user: typing.Optional[User] = None,
+    user: typing.Union[User, dict, None] = None,
     collection_name: typing.Optional[str] = None,
     import_id: typing.Optional[int] = None,
 ) -> typing.Optional[requests.Response]:
@@ -290,6 +295,8 @@ def index_yara_rule(
     Returns:
         requests.Response: The response from the indexing request.
     """
+    if isinstance(user, dict):
+        user = DummyUser(_id=user.get("id"))
     if not os.path.exists(config.YARA_RULES_COLLECTIONS_DIRECTORY):
         os.mkdir(config.YARA_RULES_COLLECTIONS_DIRECTORY)
     if parsed_rule.get("imports", []):

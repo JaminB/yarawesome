@@ -1,11 +1,10 @@
 import os
 from celery import shared_task
+
 from yarawesome.utils import search_index
 from apps.core.management.commands.inotify_rule_indexer import (
     parse_yara_rules_from_path,
 )
-
-
 from yarawesome.utils import list_files_recursive
 
 
