@@ -17,7 +17,7 @@ from .serializers import (
 )
 
 
-class YaraRuleCollectionCloneResource(APIView):
+class RuleCollectionCloneResource(APIView):
     """
     A view to clone a YARA rule collection into a personal collection.
     """
@@ -60,7 +60,7 @@ class YaraRuleCollectionCloneResource(APIView):
         )
 
 
-class YaraRuleCollectionDownloadTaskResource(APIView):
+class RuleCollectionDownloadTaskResource(APIView):
     """
     A view to create download task from YARA rule collection.
     """
@@ -122,7 +122,7 @@ class YaraRuleCollectionDownloadTaskResource(APIView):
         )
 
 
-class YaraRuleCollectionResource(APIView):
+class RuleCollectionResource(APIView):
     """
     A view to view a YARA rule collection.
     """
@@ -185,7 +185,7 @@ class YaraRuleCollectionResource(APIView):
         return Response(status=status.HTTP_200_OK, data={"deleted": True})
 
 
-class PublishYaraRuleCollectionResource(APIView):
+class PersonalRuleCollectionPublishResource(APIView):
     """
     A view to publish a YARA rule collection, and all of its rules to the public.
     """

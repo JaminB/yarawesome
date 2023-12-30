@@ -67,7 +67,7 @@ function cloneCollection(elem, onSuccess, onFailure) {
                 toastr.success(`Cloning <b><a href="/collections/${response["collection"]["id"]}" target="_blank">${collectionName}</a></b> to your personal <a href="/collections/mine">collections.</a> 
                 <br>
                 <br>
-                This process will continue in the background.`, {timeout: 20000});
+                This process will continue in the background.`, {timeOut: 15000});
             }
         },
         error: function (response) {
