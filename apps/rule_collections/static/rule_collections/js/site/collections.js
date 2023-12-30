@@ -21,7 +21,6 @@ function download(filename, text) {
 function deleteCollection(elem, onSuccess, onFailure) {
     let sourceElement = $(elem);
     let collectionId = $(sourceElement).data("collectionId");
-    console.log(sourceElement);
     $(sourceElement).prop("disabled", true);
     toastr.warning("Deleting collection...");
     $.ajax({
@@ -40,7 +39,7 @@ function deleteCollection(elem, onSuccess, onFailure) {
             if (onFailure !== undefined) {
                 onFailure(response);
             } else {
-                toastr.error("Failed to delete collection.");
+                toastr.error("Failed to delete collection. This can occur if the collection is actively being cloned. Come back later.");
             }
         }
     });
