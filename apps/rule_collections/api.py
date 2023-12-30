@@ -1,13 +1,14 @@
 import json
+from hashlib import sha256
+from datetime import datetime
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from yarawesome.utils import database
-from apps.rules.models import YaraRule, YaraRuleCollection
+from apps.rule_collections.models import YaraRuleCollection, YaraRuleCollectionDownload
 from apps.rule_import.models import ImportYaraRuleJob
-from .tasks import clone_collection, publish_collection
+from .tasks import clone_collection, download_collection, publish_collection
 from .serializers import (
     YaraRuleCollectionDeleteRequest,
     YaraRuleCollectionPublishRequest,
@@ -59,31 +60,66 @@ class YaraRuleCollectionCloneResource(APIView):
         )
 
 
-class YaraRuleCollectionDownloadResource(APIView):
+class YaraRuleCollectionDownloadTaskResource(APIView):
     """
-    A view to download a YARA rule collection.
+    A view to create download task from YARA rule collection.
     """
 
     def get(self, request, *args, **kwargs):
-        """
-        Download a YARA rule collection.
-        """
         collection_id = kwargs["collection_id"]
-        concat_rules = database.get_yara_rule_collection_content(
-            request.user, collection_id
-        )
-        if concat_rules:
-            collection_name = YaraRuleCollection.objects.get(id=collection_id).name
-            response = HttpResponse(
-                concat_rules,
-                content_type="application/x-yara",
-            )
-            response[
-                "Content-Disposition"
-            ] = f'attachment; filename="{collection_name}.yara"'
-            return response
+        download_id = kwargs["download_id"]
+        download = request.query_params.get("download")
 
-        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+        if not download:
+            try:
+                YaraRuleCollectionDownload.objects.get(
+                    id=download_id, collection_id=collection_id
+                )
+                return Response(
+                    status=status.HTTP_200_OK,
+                    data={
+                        "download_url": f"/api/collections/{collection_id}/download/{download_id}/?download=true"
+                    },
+                )
+            except YaraRuleCollectionDownload.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+        else:
+            collection_download = YaraRuleCollectionDownload.objects.get(
+                id=download_id, collection_id=collection_id
+            )
+
+            if collection_download:
+                collection_name = YaraRuleCollection.objects.get(id=collection_id).name
+                response = HttpResponse(
+                    collection_download.content,
+                    content_type="application/x-yara",
+                )
+                response[
+                    "Content-Disposition"
+                ] = f'attachment; filename="{collection_name}.yara"'
+                return response
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Create a YARA rule collection download job.
+        """
+        download_id = sha256(str(datetime.now()).encode()).hexdigest()
+        collection_id = kwargs["collection_id"]
+        download_collection.delay(
+            collection_id=collection_id,
+            download_id=download_id,
+        )
+        return Response(
+            status=status.HTTP_201_CREATED,
+            data={
+                "download_id": download_id,
+                "collection_id": collection_id,
+                "message": "Starting process of creating downloadable collection. "
+                "This may take some time to complete.",
+            },
+        )
 
 
 class YaraRuleCollectionResource(APIView):

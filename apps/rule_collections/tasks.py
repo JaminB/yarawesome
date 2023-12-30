@@ -1,11 +1,24 @@
+from hashlib import sha256
 from celery import shared_task
 
-from yarawesome.utils import search_index
+from yarawesome.utils import database, search_index
 from apps.rules.models import YaraRule
+
 from apps.core.management.commands.inotify_rule_indexer import (
     parse_yara_rules_from_raw,
 )
 from apps.core.management.commands import publish_collection_index
+
+from .models import YaraRuleCollectionDownload
+
+
+@shared_task
+def download_collection(collection_id: int, download_id: str) -> None:
+    concat_rules = database.get_yara_rule_collection_content(collection_id)
+    collection_download = YaraRuleCollectionDownload.objects.create(
+        id=download_id, collection_id=collection_id, content=concat_rules
+    )
+    collection_download.save()
 
 
 @shared_task

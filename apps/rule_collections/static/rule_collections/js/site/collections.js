@@ -1,3 +1,6 @@
+let downloadTaskCompleted = false;
+
+
 function download(filename, text) {
     let elem = document.createElement('a');
     elem.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
@@ -78,11 +81,56 @@ function cloneCollection(elem, onSuccess, onFailure) {
 }
 
 
-function downloadCollection(elem, onSuccess, onFailure) {
+function checkDownloadCollectionTask(collectionId, downloadId) {
+    if (downloadTaskCompleted) {
+        return
+    }
+    $.ajax(
+        {
+            "url": `/api/collections/${collectionId}/download/${downloadId}/`,
+            type: 'GET',
+            headers: {"X-CSRFToken": getCookie("csrftoken")},
+            contentType: "application/json; charset=utf-8",
+            success: function (response) {
+                window.location.href = response["download_url"];
+                downloadTaskCompleted = true;
+                $("#side-panel-popout").offcanvas('hide');
+            },
+            error: function (response) {
+                console.log("Does not yet exist.")
+            }
+        });
+}
+
+function createDownloadCollectionTask(elem, onSuccess, onFailure) {
     // Get the source element and collection ID from the event target.
     let sourceElement = $(elem);
     let collectionId = $(sourceElement).data("collectionId");
-    window.location = "/api/collections/" + collectionId + "/raw/";
+    downloadTaskCompleted = false;
+    $("#download-task-loader").fadeIn();
+    $("#submit-download-collection-btn").prop("disabled", true);
+    $.ajax(
+        {
+            "url": `/api/collections/${collectionId}/download/`,
+            type: 'POST',
+            headers: {"X-CSRFToken": getCookie("csrftoken")},
+            contentType: "application/json; charset=utf-8",
+            success: function (response) {
+                if (onSuccess !== undefined) {
+                    onSuccess(response);
+                }
+                setInterval(function () {
+                    checkDownloadCollectionTask(collectionId, response["download_id"]);
+                }, 5000);
+            },
+            error: function (response) {
+                if (onFailure !== undefined) {
+                    onFailure(response);
+                } else {
+                    toastr.error("Failed to create download task for collection.");
+                }
+            }
+        });
 }
 
 function editCollection(elem, onSuccess, onFailure) {
@@ -376,13 +424,19 @@ function openDownloadCollectionSidePanel(elem, onSuccess, onFailure) {
             </tbody>
         </table>
         <br>
+        <div style="display: flex; justify-content: center; align-items: center;">
+            <p style="display: none" class="lead" id="download-task-loader" >
+               <img src="/static/core/img/loader.svg" class="loader"/> Creating download task. This may take a few minutes depending on the number of rules in this collection. Please wait.
+            </p>
+            
+        </div>
         <div class="align-center">
-            <a download id="submit-download-collection-btn" href="/api/collections/${collectionId}/raw/"  class="btn btn-danger btn-lg float-end" data-collection-id="${collectionId}">
-            <i class="fa-solid fa-download" ></i> Download</a>
+            <button id="submit-download-collection-btn" href="/api/collections/${collectionId}/raw/"  class="btn btn-danger btn-lg float-end" data-collection-id="${collectionId}">
+            <i class="fa-solid fa-download" ></i> Download</button>
         </div>
         <script>
                 $("#submit-download-collection-btn").on("click", function(){
-                    toastr.info("Downloading collection, it may take a few seconds to start.");
+                    createDownloadCollectionTask(this, undefined, undefined);
                 });
         </script>
     `);

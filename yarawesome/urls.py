@@ -38,9 +38,14 @@ urlpatterns = [
         name="api-collection",
     ),
     path(
-        "api/collections/<str:collection_id>/raw/",
-        rule_collections_api.YaraRuleCollectionDownloadResource.as_view(),
-        name="api-collection-raw",
+        "api/collections/<str:collection_id>/download/",
+        rule_collections_api.YaraRuleCollectionDownloadTaskResource.as_view(),
+        name="api-download-collection-task",
+    ),
+    path(
+        "api/collections/<str:collection_id>/download/<str:download_id>/",
+        rule_collections_api.YaraRuleCollectionDownloadTaskResource.as_view(),
+        name="api-download-collection",
     ),
     path(
         "api/collections/<str:collection_id>/clone/",
