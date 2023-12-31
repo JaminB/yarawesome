@@ -1,6 +1,10 @@
 from rest_framework import serializers
 
 
+class RuleCloneSerializer(serializers.Serializer):
+    rule_id = serializers.CharField(max_length=32)
+
+
 class RuleLookupSerializer(serializers.Serializer):
     rule_id = serializers.CharField(max_length=32)
 

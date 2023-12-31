@@ -89,8 +89,13 @@ urlpatterns = [
     ),
     path(
         "api/rules/<str:rule_id>/",
-        rule_browser_api.RuleOpenResource.as_view(),
+        rule_browser_api.RuleResource.as_view(),
         name="api-rule-view",
+    ),
+    path(
+        "api/rules/<str:rule_id>/clone/",
+        rule_browser_api.RuleCloneResource.as_view(),
+        name="api-rule-clone",
     ),
     path(
         "api/rules/<str:rule_id>/editor/",

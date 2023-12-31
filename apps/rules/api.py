@@ -1,9 +1,15 @@
+import django.db
+from django.forms.models import model_to_dict
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from yarawesome.utils import database, search_index
-from .serializers import RuleLookupSerializer, RuleSearchSerializer
+from apps.rules.models import YaraRule
+from apps.rule_import.models import ImportYaraRuleJob
+from apps.rule_collections.models import YaraRuleCollection
+from .serializers import RuleCloneSerializer, RuleLookupSerializer, RuleSearchSerializer
+from .tasks import clone_rule
 
 
 class RuleSearchResource(APIView):
@@ -55,7 +61,7 @@ class RuleSearchResource(APIView):
             )
 
 
-class RuleOpenResource(APIView):
+class RuleResource(APIView):
     def get(self, request, *args, **kwargs):
         serializer = RuleLookupSerializer(data=kwargs)
         serializer.is_valid(raise_exception=True)
@@ -76,3 +82,50 @@ class RuleOpenResource(APIView):
                     {"error": "Could not locate a rule with this id."},
                     status=status.HTTP_404_NOT_FOUND,
                 )
+
+
+class RuleCloneResource(APIView):
+    def put(self, request, *args, **kwargs):
+        serializer = RuleCloneSerializer(data=kwargs)
+        serializer.is_valid(raise_exception=True)
+        rule_id = serializer.validated_data["rule_id"]
+        yara_rule = database.lookup_yara_rule(rule_id)
+        try:
+            personal_cloned_ruled_collection = YaraRuleCollection.objects.get(
+                user=request.user, name="Cloned Rules"
+            )
+        except YaraRuleCollection.DoesNotExist:
+            new_import_job = ImportYaraRuleJob(user=request.user)
+            new_import_job.save()
+            personal_cloned_ruled_collection = YaraRuleCollection.objects.create(
+                user=request.user,
+                name="Cloned Rules",
+                description="A collection of cloned rules.",
+                icon=1,
+                import_job=new_import_job,
+            )
+        if not yara_rule:
+            return Response(
+                {"error": "Rule not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        clone_rule.delay(
+            rule_id,
+            model_to_dict(personal_cloned_ruled_collection),
+            {"id": request.user.id},
+        )
+        return Response(
+            status=status.HTTP_201_CREATED,
+            data={
+                "collection": {
+                    "id": personal_cloned_ruled_collection.id,
+                    "name": personal_cloned_ruled_collection.name,
+                    "description": personal_cloned_ruled_collection.description,
+                    "icon": personal_cloned_ruled_collection.icon,
+                },
+                "rule": {
+                    "rule_id": yara_rule.rule_id,
+                },
+                "import_job": personal_cloned_ruled_collection.import_job.id,
+                "message": "Cloned rule successfully to 'Cloned Rules' collection.",
+            },
+        )
