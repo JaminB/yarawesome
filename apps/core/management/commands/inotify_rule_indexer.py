@@ -67,13 +67,23 @@ def parse_yara_rules_from_raw(yara_rules_string: str) -> typing.List[dict]:
             rule_content = "{\n" + rule_content
         if not rule_content.strip().endswith("}"):
             rule_content = rule_content + "\n}"
-        flattened_rule = {
-            "content": f"rule {parsed_yara_rule['rule_name']}\n" + rule_content,
-            "rule_id": md5(
-                "".join(sorted(str(val) for val in parsed_yara_rule.values())).encode(
-                    "utf-8"
+        rule_content = f"rule {parsed_yara_rule['rule_name']}\n" + rule_content
+        rule_id = md5(
+            (
+                "".join(
+                    sorted(
+                        [item["value"] for item in parsed_yara_rule.get("strings", [])]
+                    )
                 )
-            ).hexdigest(),
+                + "".join(sorted(parsed_yara_rule.get("condition_terms", [])))
+                + parsed_yara_rule["rule_name"]
+            )
+            .strip()
+            .encode("utf-8")
+        ).hexdigest()
+        flattened_rule = {
+            "content": rule_content,
+            "rule_id": rule_id,
             "name": parsed_yara_rule["rule_name"],
             "condition": " ".join(parsed_yara_rule.get("condition_terms", [])),
             "imports": parsed_yara_rule.get("imports", []),

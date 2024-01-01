@@ -40,7 +40,11 @@
                         <tr>
                             <th>Rule Count</th>
                             <td>
-                                {{ collection.get_rule_count }}
+                                {% if collection.is_owner %}
+                                    <a href="/rules/mine/?term=collection_id: {{ collection.id }}">{{ collection.get_rule_count }}</a>
+                                {% else %}
+                                    <a href="/rules/?term=collection_id: {{ collection.id }}">{{ collection.get_rule_count }}</a>
+                                {% endif %}
                             </td>
                         </tr>
                         </tbody>

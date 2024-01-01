@@ -40,8 +40,10 @@
                         {% for result in search_results.results %}
                             {% if result.rule %}
                                 <tr>
-                                    <td><a class="btn btn-sm btn-dark" href="#"><i
-                                            class="fa-solid fa-clone"></i></a>
+                                    <td>
+                                        <button class="btn btn-sm btn-dark clone-rule-btn"
+                                                data-rule-id="{{ result.id }}" data-name="{{ result.name }}"><i
+                                                class="fa-solid fa-clone"></i></button>
                                     </td>
                                     <td><a href="/rules/{{ result.id }}">{{ result.name }}</a></td>
                                     <td><p>{{ result.description }}</p></td>
@@ -102,9 +104,6 @@
 {% block scripts %}
     <script src="{% static 'rule_editor/js/common/codemirror.js' %}"></script>
     <script src="{% static 'rule_editor/js/site/lexers/yara.js' %}"></script>
+    <script src="{% static 'rules/js/site/rules.js' %}"></script>
     <script src="{% static 'rules/js/site/search.js' %}"></script>
-
-    <script>
-        createSearchRuleViewers();
-    </script>
 {% endblock %}

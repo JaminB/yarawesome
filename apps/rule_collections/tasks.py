@@ -1,3 +1,6 @@
+import time
+
+import django.db.utils
 from celery import shared_task
 
 from yarawesome.utils import database, search_index
@@ -45,7 +48,6 @@ def clone_collection(
 
 @shared_task
 def publish_collection(collection: dict, user: dict, set_to_public: bool) -> None:
-    publish_collection_index.build_rule_index_from_private_collection(collection, user)
 
     yara_rules = YaraRule.objects.filter(
         collection__id=collection.get("id"), user_id=user.get("id")
@@ -53,5 +55,17 @@ def publish_collection(collection: dict, user: dict, set_to_public: bool) -> Non
 
     for yara_rule in yara_rules:
         yara_rule.public = set_to_public
-        yara_rule.save()
+
+        # This is a hack to get around the database being locked.
+        # Probably only needed when using sqlite3
+        while True:
+            try:
+                yara_rule.save()
+                break
+            except django.db.utils.OperationalError as e:
+                if "database is locked" in str(e):
+                    time.sleep(0.1)
+                else:
+                    raise e
+
     publish_collection_index.build_rule_index_from_private_collection(collection, user)

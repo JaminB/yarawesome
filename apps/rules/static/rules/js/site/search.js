@@ -17,6 +17,8 @@ function createSearchRuleViewers() {
         $(".loader").hide();
     }, 1000);
     editor.update();
-
-
 }
+
+$(document).ready(function () {
+    createSearchRuleViewers();
+});

@@ -57,6 +57,10 @@
                     {% if is_owner %}
                         <a class="btn btn-sm btn-primary float-end" href="/rules/{{ rule.rule_id }}/editor"><i
                                 class="fa-solid fa-pen"></i></a>
+                    {%  else %}
+                          <button class="btn btn-sm btn-secondary float-end clone-rule-btn"
+                                                data-rule-id="{{ rule.rule_id }}" data-name="{{ rule.name }}"><i
+                                                class="fa-solid fa-clone"></i></button>
                     {% endif %}
                 </div>
 
@@ -68,9 +72,6 @@
 {% block scripts %}
     <script src="{% static 'rule_editor/js/common/codemirror.js' %}"></script>
     <script src="{% static 'rule_editor/js/site/lexers/yara.js' %}"></script>
+    <script src="{% static 'rules/js/site/rules.js' %}"></script>
     <script src="{% static 'rules/js/site/search.js' %}"></script>
-
-    <script>
-        createSearchRuleViewers();
-    </script>
 {% endblock %}

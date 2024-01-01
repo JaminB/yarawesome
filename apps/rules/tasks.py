@@ -1,6 +1,6 @@
 from celery import shared_task
 
-from yarawesome.utils import database, search_index
+from yarawesome.utils import search_index
 from apps.rules.models import YaraRule
 
 from apps.core.management.commands.inotify_rule_indexer import (
@@ -16,7 +16,7 @@ def clone_rule(
 ) -> None:
     yara_rule_obj = YaraRule.objects.filter(rule_id=rule_id, public=True).first()
     try:
-        parsed_rule = parse_yara_rules_from_raw(yara_rule_obj.content)[-1]
+        parsed_rule = parse_yara_rules_from_raw(yara_rule_obj.content.strip())[-1]
     except Exception as e:
         return
 

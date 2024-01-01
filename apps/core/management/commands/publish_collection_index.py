@@ -26,7 +26,8 @@ def build_rule_index_from_private_collection(
             return None
         yara_rules = YaraRule.objects.filter(collection=collection, user=user).all()
     else:
-        if user.get("id") != collection.get("user_id"):
+        print("HERE", user, collection)
+        if user.get("id") != collection.get("user"):
             return None
         yara_rules = YaraRule.objects.filter(
             collection__id=collection.get("id"), user_id=user.get("id")
