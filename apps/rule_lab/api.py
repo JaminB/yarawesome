@@ -55,7 +55,7 @@ class ScanUploadBinaryResource(APIView):
         serializer.is_valid(raise_exception=True)
         rule_ids = serializer.validated_data.get("rule_ids", [])
         collection_ids = serializer.validated_data.get("collection_ids", [])
-        matches = match_yara_rules.delay(
+        match_yara_rules.delay(
             binary_id,
             rule_ids=rule_ids,
             collection_ids=collection_ids,

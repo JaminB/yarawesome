@@ -1,7 +1,6 @@
 import json
 
 import plyara
-import requests
 from plyara.exceptions import ParseError
 from rest_framework import status
 from rest_framework.response import Response

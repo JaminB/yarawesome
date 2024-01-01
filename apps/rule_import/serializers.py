@@ -68,7 +68,7 @@ class CreateImportJobSerializer(serializers.Serializer):
         results_directory = extract_specific_files(
             file_path,
             allowed_extensions=[".yara", ".yar"],
-            extract_dir=f"{MEDIA_ROOT}/rule-uploads/",
+            extract_dir=f"{MEDIA_ROOT}/rule-uploads/{import_id}/",
             extracted_file_prefix=import_id,
         )
         import_yara_rules.delay(results_directory, import_id=import_id)
