@@ -30,6 +30,7 @@
                             <th></th>
                             <th></th>
                             <th></th>
+                            <th></th>
                             <th>Created</th>
                             <th>Name</th>
                             <th>Description</th>
@@ -74,6 +75,17 @@
                                                 class="fa-solid fa-cloud-arrow-up"></i></button>
                                     </td>
                                 {% endif %}
+                                <td>
+                                    <button class="btn btn-sm btn-dark scan-collection-btn"
+                                            data-bs-toggle="offcanvas"
+                                            data-bs-target="#side-panel-popout"
+                                            data-collection-id="{{ collection.id }}"
+                                            data-name="{{ collection.name }}"
+                                            data-description="{{ collection.description }}"
+                                            data-rule-count="{{ collection.get_rule_count }}"
+                                            aria-controls="offcanvasRight"><i class="fa-solid fa-vial-virus"></i>
+                                    </button>
+                                </td>
                                 <td><a href="/collections/{{ collection.id }}"><img
                                         class="collection-icon"
                                         src="/static/core/img/icons/collections/{{ collection.icon }}.png"></a></td>

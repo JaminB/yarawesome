@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-amnk9blb!)8a0u6ikvqve=srrzzb@nlr%=l3w8rq8yp-fb$n*%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["172.16.50.139"]
+ALLOWED_HOSTS = ["172.16.50.128"]
 
 
 # Application definition
@@ -147,3 +147,8 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 100,  # Set your desired default page size here
+}

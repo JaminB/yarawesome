@@ -55,3 +55,8 @@
 .collection-name-input {
     font-size: 20px;
 }
+
+.dropdown-menu {
+    max-height: 200px;
+    overflow-y: auto;
+}

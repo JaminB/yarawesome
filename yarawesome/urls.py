@@ -32,6 +32,11 @@ from apps.rule_import import views as rule_import_views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("user/", include("django.contrib.auth.urls")),
+    path("api/collections/", rule_collections_api.RuleCollectionsResource.as_view()),
+    path(
+        "api/collections/mine/",
+        rule_collections_api.PersonalRuleCollectionsResource.as_view(),
+    ),
     path(
         "api/collections/<str:collection_id>/",
         rule_collections_api.RuleCollectionResource.as_view(),
@@ -61,6 +66,11 @@ urlpatterns = [
         "api/lab/upload/",
         rule_lab_api.CreateUploadBinaryResource.as_view(),
         name="api-create-upload-binary",
+    ),
+    path(
+        "api/lab/binaries/mine/",
+        rule_lab_api.PersonalBinaryUploadsResource.as_view(),
+        name="api-binaries",
     ),
     path(
         "api/lab/binaries/<str:binary_id>/scan/",

@@ -211,6 +211,33 @@ function publishCollection(elem, onSuccess, onFailure) {
     });
 }
 
+function scanAgainstCollection(elem, onSuccess, onFailure) {
+    let sourceElement = $(elem);
+    let collectionId = $(sourceElement).data("collectionId");
+    $(sourceElement).prop("disabled", true);
+    toastr.info("Scanning against collection...");
+    $.ajax({
+        url: `/api/collections/${collectionId}/scan/`,
+        type: 'POST',
+        headers: {"X-CSRFToken": getCookie("csrftoken")},
+        contentType: "application/json; charset=utf-8",
+        success: function (response) {
+            if (onSuccess !== undefined) {
+                onSuccess(response);
+            } else {
+                toastr.info("Scanning against collection...");
+            }
+        },
+        error: function (response) {
+            if (onFailure !== undefined) {
+                onFailure(response);
+            } else {
+                toastr.error("Failed to publish collection.");
+            }
+        }
+    });
+}
+
 /**
  * Opens the clone collection side panel.
  */
@@ -305,6 +332,77 @@ function openDeleteCollectionSidePanel(onSuccess, onFailure) {
             });
         </script>
     `);
+}
+
+/**
+ * Open the scan collection side panel.
+ */
+
+function openScanCollectionSidePanel() {
+    let sourceElement = event.delegateTarget;
+    let collectionId = $(sourceElement).data("collectionId");
+    $("#side-panel-popout-title").text(`Scan Collection`);
+    $.ajax({
+        url: `/api/lab/binaries/mine/`,
+        type: 'GET',
+        headers: {"X-CSRFToken": getCookie("csrftoken")},
+        contentType: "application/json; charset=utf-8",
+        success: function (response) {
+            let optionsHtml = "";
+            for (let i = 0; i < response.length; i++) {
+                optionsHtml += `<option class="test-binary-item" value="${response[i]["id"]}">${response[i]["name"]}</option>`;
+            }
+            $("#side-panel-popout-body").html(`
+                <p class="lead">Scan against this collection?</p>
+                <hr>
+                <p>Scan an uploaded binary against ${$(sourceElement).data("rule-count")} rule(s) in this collection.</p>
+                <br>
+                <table class="table table-responsive">
+                    <tbody>
+                        <tr>
+                            <th>Name</th>
+                            <td><code>${$(sourceElement).data("name")}</code></td>
+                        </tr>
+                        <tr>
+                            <th>Description</th>
+                            <td>${$(sourceElement).data("description")}</td>
+                        </tr>
+                        <tr>
+                            <th>Rule Count</th>
+                            <th>${$(sourceElement).data("rule-count")}</th>
+                        </tr>
+                        <tr>
+                            <th>Binary to Scan</th>
+                            <td>
+                                <input class="form-control" list="test-binary-options-list" id="test-binary" placeholder="Type to search...">
+                                <datalist id="test-binary-options-list">
+                                    ${optionsHtml}
+                                </datalist>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="align-center">
+                    <button disabled id="submit-scan-collection-btn" class="btn btn-primary btn-lg float-end" data-collection-id="${collectionId}">
+                    <i class="fa-solid fa-vial-virus"></i> Scan</button>
+                </div>
+                <script>
+                    $("#test-binary").on("input", function(event){
+                        if(event.target.value.length === 32){
+                            $("#submit-scan-collection-btn").prop("disabled", false);
+                        } else {
+                            $("#submit-scan-collection-btn").prop("disabled", true);
+                        }
+                    });
+                                
+                    $("#submit-scan-collection-btn").click(function(){
+                        publishCollection(this, undefined, undefined);
+                    });
+                </script>
+            `);
+        }
+    });
+
 }
 
 /**
@@ -523,6 +621,9 @@ function initializeCollectionSidePanel() {
     });
     $(".clone-collection-btn").click(function () {
         openCloneCollectionSidePanel(this);
+    });
+    $(".scan-collection-btn").click(function () {
+        openScanCollectionSidePanel(this);
     });
     $("#download-collection-btn").click(function () {
         openDownloadCollectionSidePanel(this, undefined, undefined);

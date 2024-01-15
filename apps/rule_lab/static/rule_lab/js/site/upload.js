@@ -30,9 +30,9 @@ function uploadFromLocal(formData) {
                 window.location.reload();
             }, 4000);
         },
-        error: function (error) {
+        error: function (xhr, status, error) {
             // Handle the error response
-            toastr.error(`Upload error: ${error}`, "Upload Error");
+            toastr.error(`Upload error: ${JSON.parse(xhr.responseText)["error"]}`, "Upload Error");
         },
     });
     progressBar.show();

@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.forms.models import model_to_dict
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from apps.rule_collections.models import YaraRuleCollection, YaraRuleCollectionDownload
 from apps.rule_import.models import ImportYaraRuleJob
@@ -15,6 +16,31 @@ from .serializers import (
     YaraRuleCollectionUpdateRequest,
     YaraRuleCollectionCloneRequest,
 )
+
+
+class RuleCollectionsResource(APIView):
+    """
+    A view to list all YARA rule collections.
+    """
+
+    def get(self, request, *args, **kwargs):
+        """
+        List all YARA rule collections with pagination.
+        """
+        paginator = PageNumberPagination()
+        collections = YaraRuleCollection.objects.filter(public=True)
+        result_page = paginator.paginate_queryset(collections, request)
+        collection_data = [
+            {
+                "id": collection.id,
+                "name": collection.name,
+                "description": collection.description,
+                "icon": collection.icon,
+                "public": collection.public,
+            }
+            for collection in result_page
+        ]
+        return paginator.get_paginated_response(collection_data)
 
 
 class RuleCollectionCloneResource(APIView):
@@ -183,6 +209,31 @@ class RuleCollectionResource(APIView):
             )
         yara_rule_collection.delete()
         return Response(status=status.HTTP_200_OK, data={"deleted": True})
+
+
+class PersonalRuleCollectionsResource(APIView):
+    """
+    A view to list all YARA rule collections.
+    """
+
+    def get(self, request, *args, **kwargs):
+        """
+        List all YARA rule collections with pagination.
+        """
+        paginator = PageNumberPagination()
+        collections = YaraRuleCollection.objects.filter(user_id=request.user.id)
+        result_page = paginator.paginate_queryset(collections, request)
+        collection_data = [
+            {
+                "id": collection.id,
+                "name": collection.name,
+                "description": collection.description,
+                "icon": collection.icon,
+                "public": collection.public,
+            }
+            for collection in result_page
+        ]
+        return paginator.get_paginated_response(collection_data)
 
 
 class PersonalRuleCollectionPublishResource(APIView):
